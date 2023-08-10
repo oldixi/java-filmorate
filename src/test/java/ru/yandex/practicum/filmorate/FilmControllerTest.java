@@ -48,7 +48,8 @@ public class FilmControllerTest {
                     public void execute() {
                         filmController.addFilm(film);
                     }
-                });
+                }
+                );
         assertEquals("Продолжительность фильма должна быть больше 0.", exception.getMessage());}
 
     @Test
@@ -67,7 +68,8 @@ public class FilmControllerTest {
                     public void execute() {
                         filmController.addFilm(film);
                     }
-                });
+                }
+                );
         assertEquals("Система поддерживает загрузку фильмов с датой выхода после 28 декабря 1895.", exception.getMessage());
     }
 
@@ -86,7 +88,8 @@ public class FilmControllerTest {
                     public void execute() {
                         filmController.addFilm(film);
                     }
-                });
+                }
+                );
         assertEquals("Наименование фильма - обязательное поле.", exception.getMessage());
     }
 
@@ -108,7 +111,8 @@ public class FilmControllerTest {
                     public void execute() {
                         filmController.addFilm(film);
                     }
-                });
+                }
+                );
         assertEquals("Описание фильма ограничено 200 символами.", exception.getMessage());
     }
 }

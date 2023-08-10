@@ -46,7 +46,8 @@ public class UserControllerTest {
                     public void execute() {
                         userController.addUser(user);
                     }
-                });
+                }
+                );
         assertEquals("Дата рождения не может быть в будущем.", exception.getMessage());}
 
     @Test
@@ -65,7 +66,8 @@ public class UserControllerTest {
                     public void execute() {
                         userController.addUser(user);
                     }
-                });
+                }
+                );
         assertEquals("Логин не может быть пустым и не должен содержать пробелы.", exception.getMessage());
 }
 
@@ -85,7 +87,8 @@ public class UserControllerTest {
                         public void execute() {
                             userController.addUser(user);
                         }
-                    });
+                    }
+                    );
         assertEquals("Электронная почта не может быть пустой и должна содержать символ @.", exception.getMessage());
     }
 }
