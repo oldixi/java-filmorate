@@ -48,7 +48,8 @@ public class UserControllerTest {
                     }
                 }
                 );
-        assertEquals("Дата рождения не может быть в будущем.", exception.getMessage());}
+        assertEquals("Дата рождения не может быть в будущем.", exception.getMessage());
+    }
 
     @Test
     void shouldNotAddUserNullLogin() {
