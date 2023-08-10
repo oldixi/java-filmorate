@@ -17,6 +17,7 @@ public class UserController {
     Map<Long, User> users = new HashMap<>();
 
     private long idNum;
+
     private long generateId() {
         return ++idNum;
     }
