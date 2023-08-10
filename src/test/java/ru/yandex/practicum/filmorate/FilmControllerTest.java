@@ -50,7 +50,8 @@ public class FilmControllerTest {
                     }
                 }
                 );
-        assertEquals("Продолжительность фильма должна быть больше 0.", exception.getMessage());}
+        assertEquals("Продолжительность фильма должна быть больше 0.", exception.getMessage());
+    }
 
     @Test
     void shouldNotAddFilmBeforeMinReleaseDate() {
