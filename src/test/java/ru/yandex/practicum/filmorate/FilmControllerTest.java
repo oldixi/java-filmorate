@@ -112,4 +112,3 @@ public class FilmControllerTest {
         assertEquals("Описание фильма ограничено 200 символами.", exception.getMessage());
     }
 }
-
