@@ -70,9 +70,9 @@ public class UserControllerTest {
 }
 
     @Test
-    void shouldNotAddUserBadEmail() {
+    void shouldNotAddUserBlancEmail() {
         User user = User.builder()
-                .email("testFilmoRateUser1gmail.com")
+                .email("")
                 .login("TU1")
                 .name("TestUser1")
                 .birthday(LocalDate.now().minusYears(20))

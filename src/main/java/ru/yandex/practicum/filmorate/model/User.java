@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Data;
 import ru.yandex.practicum.filmorate.controller.ValidationException;
 
+import javax.validation.constraints.Email;
 import java.time.LocalDate;
 
 @Builder
@@ -11,11 +12,12 @@ import java.time.LocalDate;
 public class User {
     private static final LocalDate NOW = LocalDate.now();
 
-    int id;
-    String email;
-    String login;
-    String name;
-    LocalDate birthday;
+    private long id;
+    @Email(message = "Электронная почта не прошла валидацию.")
+    private String email;
+    private String login;
+    private String name;
+    private LocalDate birthday;
 
     public boolean isValid() {
         if (email == null || email.isBlank() || !email.contains("@")) {

@@ -9,14 +9,14 @@ import java.time.LocalDate;
 @Builder
 @Data
 public class Film {
-    public static final int DESCRIPTION_LENGTH = 200;
+    private static final int DESCRIPTION_LENGTH = 200;
     public static final LocalDate MIN_RELEASE_DATE = LocalDate.of(1895, 12, 28);
 
-    int id;
-    String name;
-    String description;
-    LocalDate releaseDate;
-    int duration;
+    private long id;
+    private String name;
+    private String description;
+    private LocalDate releaseDate;
+    private int duration;
 
     public boolean isValid() {
         if (name == null || name.isBlank()) {
