@@ -58,7 +58,7 @@ public class FilmControllerTest {
         Film film = Film.builder()
                 .name("Служебный роман")
                 .description("Комедия про трудовые будни Статистической организации")
-                .releaseDate(Film.MIN_RELEASE_DATE.minusDays(1))
+                .releaseDate(FilmController.MIN_RELEASE_DATE.minusDays(1))
                 .duration(159)
                 .build();
 
