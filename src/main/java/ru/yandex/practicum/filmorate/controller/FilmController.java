@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -16,17 +17,18 @@ import java.util.Map;
 
 @Slf4j
 @RestController
+@RequestMapping("/films")
 public class FilmController {
     private final Map<Long, Film> films = new HashMap<>();
     private long uniqueId;
 
-    @GetMapping(value = "films")
+    @GetMapping
     public List<Film> getFilms() {
         log.info("Get list of films.");
         return List.copyOf(films.values());
     }
 
-    @PostMapping(value = "films")
+    @PostMapping
     public Film post(@RequestBody Film film) {
         if (isNotValid(film)) {
             log.info("Film is not valid. {}", film);
@@ -42,7 +44,7 @@ public class FilmController {
         return film;
     }
 
-    @PutMapping(value = "films")
+    @PutMapping
     public Film update(@RequestBody Film film) {
         if (isNotValid(film)) {
             log.info("Film is not valid. {}", film);
