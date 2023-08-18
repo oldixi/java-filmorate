@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
+import javax.validation.Valid;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
@@ -29,7 +30,7 @@ public class FilmController {
     }
 
     @PostMapping
-    public Film post(@RequestBody Film film) {
+    public Film post(@Valid @RequestBody Film film) {
         if (isNotValid(film)) {
             log.info("Film is not valid. {}", film);
             throw new ValidationException("Film validation has been failed");
@@ -45,7 +46,7 @@ public class FilmController {
     }
 
     @PutMapping
-    public Film update(@RequestBody Film film) {
+    public Film update(@Valid @RequestBody Film film) {
         if (isNotValid(film)) {
             log.info("Film is not valid. {}", film);
             throw new ValidationException("Film validation has been failed");
@@ -61,11 +62,7 @@ public class FilmController {
     }
 
     private boolean isNotValid(Film film) {
-        return film.getName().isEmpty()
-                || film.getName().isBlank()
-                || film.getDescription().length() > 200
-                || film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))
-                || film.getDuration() <= 0;
+        return film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28));
     }
 
     private long generateId() {

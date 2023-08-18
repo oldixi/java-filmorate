@@ -13,12 +13,15 @@ import java.time.LocalDate;
 @Accessors(chain = true)
 public class User {
     private long id;
+
     @Email
     private String email;
+
     @NotNull
     @NotEmpty
     @NotBlank
     private String login;
+
     private String name;
     private LocalDate birthday;
 }
