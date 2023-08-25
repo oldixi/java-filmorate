@@ -29,7 +29,7 @@ public class FilmService {
         Set<Long> filmLikes = new HashSet<>();
         if (userStorage.getUserById(userId) != null) {
             Film film = filmStorage.getFilmById(filmId);
-            if (film.getUsersLikes() != null ) {
+            if (film.getUsersLikes() != null) {
                 filmLikes = film.getUsersLikes();
             }
             filmLikes.add(userId);
@@ -42,7 +42,7 @@ public class FilmService {
         log.info(String.format("Удаление лайка для фильма %d от пользователя %d", filmId, userId));
         if (userStorage.getUserById(userId) != null) {
             Film film = filmStorage.getFilmById(filmId);
-            if (film.getUsersLikes() != null ) {
+            if (film.getUsersLikes() != null) {
                 Set<Long> filmLikes = film.getUsersLikes();
                 if (filmLikes.contains(userId)) {
                     filmLikes.remove(userId);

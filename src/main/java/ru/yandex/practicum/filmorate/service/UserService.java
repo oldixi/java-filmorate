@@ -24,7 +24,7 @@ public class UserService {
         Set<Long> friendsOfFriend = new HashSet<>();
         User user = userStorage.getUserById(userId);
         User friend = userStorage.getUserById(friendId);
-        if (user.getFriends() != null ) {
+        if (user.getFriends() != null) {
             friendsOfUser = user.getFriends();
         }
         if (friend.getFriends() != null) {
@@ -44,7 +44,7 @@ public class UserService {
         Set<Long> friendsOfFriend = new HashSet<>();
         User user = userStorage.getUserById(userId);
         User friend = userStorage.getUserById(friendId);
-        if (user.getFriends() != null ) {
+        if (user.getFriends() != null) {
             friendsOfUser = user.getFriends();
         }
         if (friend.getFriends() != null) {
