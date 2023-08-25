@@ -5,6 +5,7 @@ import lombok.Data;
 
 import javax.validation.constraints.Email;
 import java.time.LocalDate;
+import java.util.Set;
 
 @Builder
 @Data
@@ -15,4 +16,5 @@ public class User {
     private String login;
     private String name;
     private LocalDate birthday;
+    private Set<Long> friends;
 }

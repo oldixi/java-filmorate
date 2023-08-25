@@ -3,9 +3,10 @@ package ru.yandex.practicum.filmorate;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.springframework.boot.test.context.SpringBootTest;
-import ru.yandex.practicum.filmorate.controller.FilmController;
-import ru.yandex.practicum.filmorate.controller.ValidationException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
 
 import java.time.LocalDate;
 import java.util.stream.Collectors;
@@ -15,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 public class FilmControllerTest {
-    FilmController filmController = new FilmController();
+    FilmStorage filmStorage = new InMemoryFilmStorage();
     ValidationException exception;
 
     @Test
@@ -26,10 +27,10 @@ public class FilmControllerTest {
                 .releaseDate(LocalDate.of(1977, 10, 26))
                 .duration(159)
                 .build();
-        filmController.addFilm(film);
+        filmStorage.addFilm(film);
 
-        assertEquals(1, filmController.getFilms().size(), "Не совпадает количество добавленных фильмов.");
-        assertTrue(filmController.getFilms().contains(film), "Фильм не добавился.");
+        assertEquals(1, filmStorage.getFilms().size(), "Не совпадает количество добавленных фильмов.");
+        assertTrue(filmStorage.getFilms().contains(film), "Фильм не добавился.");
     }
 
     @Test
@@ -46,7 +47,7 @@ public class FilmControllerTest {
                 new Executable() {
                     @Override
                     public void execute() {
-                        filmController.addFilm(film);
+                        filmStorage.addFilm(film);
                     }
                 }
                 );
@@ -58,7 +59,7 @@ public class FilmControllerTest {
         Film film = Film.builder()
                 .name("Служебный роман")
                 .description("Комедия про трудовые будни Статистической организации")
-                .releaseDate(FilmController.MIN_RELEASE_DATE.minusDays(1))
+                .releaseDate(InMemoryFilmStorage.MIN_RELEASE_DATE.minusDays(1))
                 .duration(159)
                 .build();
 
@@ -67,7 +68,7 @@ public class FilmControllerTest {
                 new Executable() {
                     @Override
                     public void execute() {
-                        filmController.addFilm(film);
+                        filmStorage.addFilm(film);
                     }
                 }
                 );
@@ -87,7 +88,7 @@ public class FilmControllerTest {
                 new Executable() {
                     @Override
                     public void execute() {
-                        filmController.addFilm(film);
+                        filmStorage.addFilm(film);
                     }
                 }
                 );
@@ -110,7 +111,7 @@ public class FilmControllerTest {
                 new Executable() {
                     @Override
                     public void execute() {
-                        filmController.addFilm(film);
+                        filmStorage.addFilm(film);
                     }
                 }
                 );

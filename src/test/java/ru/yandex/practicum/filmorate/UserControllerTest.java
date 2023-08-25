@@ -3,9 +3,10 @@ package ru.yandex.practicum.filmorate;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.springframework.boot.test.context.SpringBootTest;
-import ru.yandex.practicum.filmorate.controller.UserController;
-import ru.yandex.practicum.filmorate.controller.ValidationException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
 
@@ -13,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 public class UserControllerTest {
-    UserController userController = new UserController();
+    UserStorage userStorage = new InMemoryUserStorage();
     ValidationException exception;
 
     @Test
@@ -23,11 +24,11 @@ public class UserControllerTest {
                 .login("TU1")
                 .birthday(LocalDate.now().minusYears(20))
                 .build();
-        userController.addUser(user);
+        userStorage.addUser(user);
 
-        assertEquals(1, userController.getUsers().size(), "Не совпадает количество добавленных пользователей.");
-        assertTrue(userController.getUsers().contains(user), "Пользователь не добавился.");
-        assertEquals("TU1", userController.getUsers().get(0).getName(), "Не совпадает имя с логином при незаданном имени.");
+        assertEquals(1, userStorage.getUsers().size(), "Не совпадает количество добавленных пользователей.");
+        assertTrue(userStorage.getUsers().contains(user), "Пользователь не добавился.");
+        assertEquals("TU1", userStorage.getUsers().get(0).getName(), "Не совпадает имя с логином при незаданном имени.");
     }
 
     @Test
@@ -44,7 +45,7 @@ public class UserControllerTest {
                 new Executable() {
                     @Override
                     public void execute() {
-                        userController.addUser(user);
+                        userStorage.addUser(user);
                     }
                 }
                 );
@@ -65,7 +66,7 @@ public class UserControllerTest {
                 new Executable() {
                     @Override
                     public void execute() {
-                        userController.addUser(user);
+                        userStorage.addUser(user);
                     }
                 }
                 );
@@ -86,7 +87,7 @@ public class UserControllerTest {
                     new Executable() {
                         @Override
                         public void execute() {
-                            userController.addUser(user);
+                            userStorage.addUser(user);
                         }
                     }
                     );
