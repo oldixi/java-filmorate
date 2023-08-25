@@ -16,7 +16,7 @@ import java.util.Map;
 @Component
 @Slf4j
 @Data
-public class InMemoryUserStorage implements UserStorage{
+public class InMemoryUserStorage implements UserStorage {
     private static final LocalDate NOW = LocalDate.now();
 
     Map<Long, User> users = new HashMap<>();
