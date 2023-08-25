@@ -9,7 +9,6 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import javax.validation.Valid;
 import java.util.List;
-import java.util.Set;
 
 @Slf4j
 @RestController
