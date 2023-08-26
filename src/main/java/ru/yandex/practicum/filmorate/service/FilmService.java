@@ -24,6 +24,22 @@ public class FilmService {
         this.userStorage = userStorage;
     }
 
+    public Film addFilm(Film film) {
+        return filmStorage.addFilm(film);
+    }
+
+    public Film updateFilm(Film film) {
+        return filmStorage.updateFilm(film);
+    }
+
+    public List<Film> getFilms() {
+        return filmStorage.getFilms();
+    }
+
+    public Film getFilmById(Long id) {
+        return filmStorage.getFilmById(id);
+    }
+
     public void addLike(long userId, long filmId) {
         log.info(String.format("Добавление лайка для фильма %d от пользователя %d", filmId, userId));
         Set<Long> filmLikes = new HashSet<>();
@@ -59,7 +75,7 @@ public class FilmService {
         if (filmsPopularList != null) {
             filmsPopularList = filmsPopularList
                     .stream()
-                    .sorted((film1, film2) -> compareLikesCount(film1, film2))
+                    .sorted(this::compareLikesCount)
                     .limit(count)
                     .collect(Collectors.toList());
         }

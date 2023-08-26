@@ -18,6 +18,22 @@ public class UserService {
         this.userStorage = userStorage;
     }
 
+    public User addUser(User user) {
+        return userStorage.addUser(user);
+    }
+
+    public User updateUser(User user) {
+        return userStorage.updateUser(user);
+    }
+
+    public List<User> getUsers() {
+        return userStorage.getUsers();
+    }
+
+    public User getUserById(Long id) {
+        return userStorage.getUserById(id);
+    }
+
     public void addFriend(long userId, long friendId) {
         log.info(String.format("Добавление друга %d для пользователя %d", friendId, userId));
         Set<Long> friendsOfUser = new HashSet<>();
@@ -75,21 +91,17 @@ public class UserService {
     }
 
     public List<User> getCommonFriendsList(long userId, long otherId) {
-        List<User> friendsCommonList = new ArrayList<>();
+        final List<User> friendsCommonList = new ArrayList<>();
         log.info(String.format("Список общих друзей для пользователя %d и %d", userId, otherId));
         Set<Long> friendsOfUserId = userStorage.getUserById(userId).getFriends();
         Set<Long> friendsOfFriendId = userStorage.getUserById(otherId).getFriends();
-        if (friendsOfUserId != null && friendsOfFriendId != null) {
-            for (Long friendId : friendsOfUserId) {
-                if (!friendId.equals(otherId)) {
-                    for (Long otherFriendId : friendsOfFriendId) {
-                        if (friendId.equals(otherFriendId)) {
-                            friendsCommonList.add(userStorage.getUserById(otherFriendId));
-                        }
-                    }
-                }
-            }
+        if (friendsOfUserId == null || friendsOfFriendId == null) {
+            return friendsCommonList;
         }
+        friendsOfUserId
+                .stream()
+                .filter(friendsOfFriendId::contains)
+                .forEach(friend -> friendsCommonList.add(userStorage.getUserById(friend)));
         return friendsCommonList;
     }
 }
