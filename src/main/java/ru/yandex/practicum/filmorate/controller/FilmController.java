@@ -20,6 +20,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/films")
 public class FilmController {
+    private final static LocalDate EARLIEST_FILM_RELEASE = LocalDate.of(1895, 12, 28);
     private final Map<Long, Film> films = new HashMap<>();
     private long uniqueId;
 
@@ -32,7 +33,7 @@ public class FilmController {
     @PostMapping
     public Film post(@Valid @RequestBody Film film) {
         if (isNotValid(film)) {
-            log.info("Film is not valid. {}", film);
+            log.warn("Film is not valid. {}", film);
             throw new ValidationException("Film validation has been failed");
         }
 
@@ -48,7 +49,7 @@ public class FilmController {
     @PutMapping
     public Film update(@Valid @RequestBody Film film) {
         if (isNotValid(film)) {
-            log.info("Film is not valid. {}", film);
+            log.warn("Film is not valid. {}", film);
             throw new ValidationException("Film validation has been failed");
         }
 
@@ -62,7 +63,7 @@ public class FilmController {
     }
 
     private boolean isNotValid(Film film) {
-        return film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28));
+        return film.getReleaseDate().isBefore(EARLIEST_FILM_RELEASE);
     }
 
     private long generateId() {
