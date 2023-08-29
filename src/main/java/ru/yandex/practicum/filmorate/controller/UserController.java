@@ -31,6 +31,8 @@ public class UserController {
 
     @PostMapping
     public User post(@Valid @RequestBody User user) {
+        changeNameToLogin(user);
+
         if (isNotValid(user)) {
             log.info("User is not valid {}", user);
             throw new ValidationException("User validation has been failed");
@@ -47,6 +49,8 @@ public class UserController {
 
     @PutMapping
     public User update(@Valid @RequestBody User user) {
+        changeNameToLogin(user);
+
         if (isNotValid(user)) {
             log.info("User is not valid {}", user);
             throw new ValidationException("User validation has been failed");
@@ -62,12 +66,14 @@ public class UserController {
     }
 
     private boolean isNotValid(User user) {
+        return user.getLogin().contains(" ")
+                || user.getBirthday().isAfter(LocalDate.now());
+    }
+
+    private void changeNameToLogin(User user) {
         if (user.getName() == null || user.getName().isEmpty() || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
-
-        return user.getLogin().contains(" ")
-                || user.getBirthday().isAfter(LocalDate.now());
     }
 
     private long generateId() {
