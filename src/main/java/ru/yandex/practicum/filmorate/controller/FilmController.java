@@ -20,7 +20,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/films")
 public class FilmController {
-    private final static LocalDate EARLIEST_FILM_RELEASE = LocalDate.of(1895, 12, 28);
+    private static final LocalDate EARLIEST_FILM_RELEASE = LocalDate.of(1895, 12, 28);
     private final Map<Long, Film> films = new HashMap<>();
     private long uniqueId;
 
