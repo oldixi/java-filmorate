@@ -30,11 +30,17 @@ public class InMemoryFilmStorage implements FilmStorage{
     }
 
     @Override
-    public Film getById(long filmId) {
+    public Film getById(Long filmId) {
         return films.get(filmId);
     }
 
+    @Override
     public List<Film> getAllFilms() {
         return List.copyOf(films.values());
+    }
+
+    @Override
+    public boolean isPresent(Long filmId) {
+        return films.containsKey(filmId);
     }
 }
