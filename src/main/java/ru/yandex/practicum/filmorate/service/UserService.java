@@ -99,6 +99,7 @@ public class UserService {
 
     private void changeNameToLogin(User user) {
         if (user.getName() == null || user.getName().isEmpty() || user.getName().isBlank()) {
+            log.info("Changed user name to user login");
             user.setName(user.getLogin());
         }
     }
@@ -114,6 +115,7 @@ public class UserService {
             return userStorage.getById(parsedUserId);
         }
 
+        log.warn("Requested non-existent user. Id {}", userId);
         throw new WrongUserIdException("User with such id doesn't exist.");
     }
 
@@ -125,6 +127,7 @@ public class UserService {
                     .collect(Collectors.toList());
         }
 
+        log.warn("Requested non-existent user. Id {}", userId);
         throw new WrongUserIdException("User with such id doesn't exist.");
     }
 
@@ -133,9 +136,11 @@ public class UserService {
         try {
             pathVariable = Long.parseLong(pathId);
         } catch (NumberFormatException e) {
+            log.warn("Parser. Path variable has wrong format {}", pathId);
             throw new InvalidPathVariableException("Incorrect user id parameter format.");
         }
         if (pathVariable < 0) {
+            log.warn("Parser. Requested user with wrong id {}", pathVariable);
             throw new WrongFilmIdException("User with such id doesn't exist.");
         }
 

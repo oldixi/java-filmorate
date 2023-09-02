@@ -36,33 +36,38 @@ public class FilmController {
 
     @GetMapping("/{id}")
     public Film getFilmById(@PathVariable String id) {
+        log.info("Requested film {}", id);
         return filmService.getFilmById(id);
     }
 
     @PutMapping("/{id}/like/{userId}")
     public Film addLike(@PathVariable String id, @PathVariable String userId) {
+        log.info("Requested add like to film {} from user {}", id, userId);
         filmService.addLike(userId, id);
         return filmService.getFilmById(id);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
     public void deleteLike(@PathVariable String id, @PathVariable String userId) {
+        log.info("Requested delete like to film {} from user {}", id, userId);
         filmService.deleteLike(userId, id);
     }
 
     @GetMapping("/popular")
     public List<Film> getPopularFilms(@RequestParam(required = false) String count) {
+        log.info("Requested most popular {} films", count);
         return filmService.getTopFilms(count);
     }
 
     @PostMapping
     public Film post(@Valid @RequestBody Film film) {
-
+        log.info("Requested add film {}", film);
         return filmService.addFilm(film);
     }
 
     @PutMapping
     public Film update(@Valid @RequestBody Film film) {
+        log.info("Requested update film {}", film);
         return filmService.update(film);
     }
 

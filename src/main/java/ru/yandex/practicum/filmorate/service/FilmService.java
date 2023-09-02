@@ -35,6 +35,7 @@ public class FilmService {
         if (film.getId() == 0) {
             film.setId(generateId());
         }
+
         log.info("Film added {}.", film);
         return filmStorage.add(film);
     }
@@ -50,6 +51,7 @@ public class FilmService {
             return filmStorage.update(film);
         }
 
+        log.warn("Requested non-existent film {}", film);
         throw new WrongFilmIdException("Can't find the film to update");
     }
 
@@ -61,6 +63,8 @@ public class FilmService {
             filmStorage.getById(parsedFilmId).addLike(parsedUserId);
             return;
         }
+
+        log.warn("Requested non-existent film. Id {}", filmId);
         throw new WrongFilmIdException("There is no film with such id.");
     }
 
@@ -72,6 +76,8 @@ public class FilmService {
             filmStorage.getById(parsedFilmId).deleteLike(parsedUserId);
             return;
         }
+
+        log.warn("Requested non-existent film. Id {}", filmId);
         throw new WrongFilmIdException("There is no film with such id.");
     }
 
@@ -82,6 +88,7 @@ public class FilmService {
             return filmStorage.getById(parsedFilmId);
         }
 
+        log.warn("Requested non-existent film. Id {}", filmId);
         throw new WrongFilmIdException("Film with such id doesn't exist");
     }
 
@@ -115,9 +122,11 @@ public class FilmService {
         try {
             pathVariable = Long.parseLong(pathId);
         } catch (NumberFormatException e) {
+            log.warn("Parser. Path variable has wrong format {}", pathId);
             throw new InvalidPathVariableException("Incorrect film id or count parameter format.");
         }
         if (pathVariable < 0) {
+            log.warn("Parser. Requested film with wrong id {}", pathVariable);
             throw new WrongFilmIdException("Film with such id doesn't exist.");
         }
 
