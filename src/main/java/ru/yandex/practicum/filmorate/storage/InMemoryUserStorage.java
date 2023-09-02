@@ -7,8 +7,9 @@ import java.util.HashMap;
 import java.util.List;
 
 @Component
-public class InMemoryUserStorage implements UserStorage{
+public class InMemoryUserStorage implements UserStorage {
     private final HashMap<Long, User> users = new HashMap<>();
+
     @Override
     public User add(User user) {
         users.put(user.getId(), user);
