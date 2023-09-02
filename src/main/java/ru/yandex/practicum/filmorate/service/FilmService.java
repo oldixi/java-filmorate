@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class FilmService {
-    private final LocalDate EARLIEST_FILM_RELEASE = LocalDate.of(1895, 12,5);
+    private static final LocalDate EARLIEST_FILM_RELEASE = LocalDate.of(1895, 12,5);
     private long uniqueId;
     private final FilmStorage filmStorage;
 
