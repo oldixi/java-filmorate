@@ -32,13 +32,13 @@ public class Film {
     @Positive
     private int duration;
 
-    private Set<Long> likes = new HashSet<>();
+    private Set<Long> likeIds = new HashSet<>();
 
     public void addLike(Long userId) {
-        likes.add(userId);
+        likeIds.add(userId);
     }
 
     public void deleteLike(Long userId) {
-        likes.remove(userId);
+        likeIds.remove(userId);
     }
 }

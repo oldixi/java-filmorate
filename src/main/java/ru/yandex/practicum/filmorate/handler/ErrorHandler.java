@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.handler;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -11,29 +12,28 @@ import ru.yandex.practicum.filmorate.exception.WrongUserIdException;
 
 import java.util.Map;
 
+@Slf4j
 @RestControllerAdvice("ru.yandex.practicum.filmorate.controller")
 public class ErrorHandler {
-    @ExceptionHandler
+    @ExceptionHandler({InvalidPathVariableException.class, ValidationException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, String> invalidPathVariableException(final InvalidPathVariableException e) {
+    public Map<String, String> invalidPathVariableException(final Exception e) {
+        log.warn("Invalid variable or data validation {}", e.getMessage());
         return Map.of("Error", e.getMessage());
     }
 
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, String> validationException(final ValidationException e) {
-        return Map.of("Error", e.getMessage());
-    }
-
-    @ExceptionHandler
+    @ExceptionHandler({WrongUserIdException.class, WrongFilmIdException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public Map<String, String> wrongUserIdException(final WrongUserIdException e) {
+    public Map<String, String> wrongUserIdException(final Exception e) {
+        log.warn("Invalid id {}", e.getMessage());
         return Map.of("Error", e.getMessage());
     }
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public Map<String, String> wrongFilmIdException(final WrongFilmIdException e) {
-        return Map.of("Error", e.getMessage());
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public Map<String, String> serverInternalError(final Exception e) {
+        log.warn("Internal server error {}", e.getMessage());
+        return Map.of("Internal server error", e.getMessage());
     }
+
 }

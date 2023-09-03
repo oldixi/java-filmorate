@@ -1,9 +1,8 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.InvalidPathVariableException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.exception.WrongFilmIdException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -16,25 +15,15 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class FilmService {
     //Стас, пришлось криво называть константу - паттерн проверки кодстайла на гите не содержит '_'. В поддержку уже написал
-    private static final LocalDate EARLIESTFILMRELEASE = LocalDate.of(1895, 12,5);
-    private long uniqueId;
+    private static final LocalDate EARLIESTFILMRELEASE = LocalDate.of(1895, 12, 5);
     private final FilmStorage filmStorage;
-
-    @Autowired
-    FilmService(FilmStorage filmStorage) {
-        this.filmStorage = filmStorage;
-    }
 
     public Film addFilm(Film film) {
         if (isNotValid(film)) {
-            log.warn("Film is not valid. {}", film);
             throw new ValidationException("Film validation has been failed");
-        }
-
-        if (film.getId() == 0) {
-            film.setId(generateId());
         }
 
         log.info("Film added {}.", film);
@@ -47,91 +36,54 @@ public class FilmService {
             throw new ValidationException("Film validation has been failed");
         }
 
-        if (filmStorage.isPresent(film.getId())) {
-            log.info("Film updated {}", film);
-            return filmStorage.update(film);
+        if (!filmStorage.isPresent(film.getId())) {
+            throw new WrongFilmIdException("Can't find the film to update");
         }
 
-        log.warn("Requested non-existent film {}", film);
-        throw new WrongFilmIdException("Can't find the film to update");
+        log.info("Film updated {}", film);
+        return filmStorage.update(film);
     }
 
-    public void addLike(String userId, String filmId) {
-        long parsedFilmId = parsePathParam(filmId);
-        long parsedUserId = parsePathParam(userId);
+    public void addLike(long userId, long filmId) {
 
-        if (filmStorage.isPresent(parsedFilmId)) {
-            filmStorage.getById(parsedFilmId).addLike(parsedUserId);
-            return;
+        if (!filmStorage.isPresent(filmId)) {
+            throw new WrongFilmIdException("There is no film with such id.");
         }
 
-        log.warn("Requested non-existent film. Id {}", filmId);
-        throw new WrongFilmIdException("There is no film with such id.");
+        filmStorage.getById(filmId).addLike(userId);
+        return;
     }
 
-    public void deleteLike(String userId, String filmId) {
-        long parsedFilmId = parsePathParam(filmId);
-        long parsedUserId = parsePathParam(userId);
+    public void deleteLike(long userId, long filmId) {
 
-        if (filmStorage.isPresent(parsedFilmId)) {
-            filmStorage.getById(parsedFilmId).deleteLike(parsedUserId);
-            return;
+        if (!filmStorage.isPresent(filmId)) {
+            throw new WrongFilmIdException("There is no film with such id.");
         }
 
-        log.warn("Requested non-existent film. Id {}", filmId);
-        throw new WrongFilmIdException("There is no film with such id.");
+        filmStorage.getById(filmId).deleteLike(userId);
+        return;
     }
 
-    public Film getFilmById(String filmId) {
-        long parsedFilmId = parsePathParam(filmId);
+    public Film getFilmById(long filmId) {
 
-        if (filmStorage.isPresent(parsedFilmId)) {
-            return filmStorage.getById(parsedFilmId);
+        if (!filmStorage.isPresent(filmId)) {
+            throw new WrongFilmIdException("Film with such id doesn't exist");
         }
 
-        log.warn("Requested non-existent film. Id {}", filmId);
-        throw new WrongFilmIdException("Film with such id doesn't exist");
+        return filmStorage.getById(filmId);
     }
 
     public List<Film> getAllFilms() {
         return filmStorage.getAllFilms();
     }
 
-    public List<Film> getTopFilms(String count) {
-        long filmsCount = 10;
+    public List<Film> getTopFilms(long count) {
 
-        if (count != null) {
-            filmsCount = parsePathParam(count);
-        }
-
-        return filmStorage.getAllFilms().stream()
-                .sorted(Comparator.comparing(film -> -film.getLikes().size()))
-                .limit(filmsCount)
-                .collect(Collectors.toList());
+        return filmStorage.getAllFilms().stream().sorted(Comparator.comparing(film -> -film.getLikeIds().size())).limit(count).collect(Collectors.toList());
     }
 
     private boolean isNotValid(Film film) {
         return film.getReleaseDate().isBefore(EARLIESTFILMRELEASE);
-    }
-
-    private long generateId() {
-        return ++uniqueId;
-    }
-
-    private Long parsePathParam(String pathId) {
-        long pathVariable;
-        try {
-            pathVariable = Long.parseLong(pathId);
-        } catch (NumberFormatException e) {
-            log.warn("Parser. Path variable has wrong format {}", pathId);
-            throw new InvalidPathVariableException("Incorrect film id or count parameter format.");
-        }
-        if (pathVariable < 0) {
-            log.warn("Parser. Requested film with wrong id {}", pathVariable);
-            throw new WrongFilmIdException("Film with such id doesn't exist.");
-        }
-
-        return pathVariable;
     }
 
 }

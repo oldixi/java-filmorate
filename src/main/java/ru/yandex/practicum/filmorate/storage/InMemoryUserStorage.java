@@ -8,11 +8,13 @@ import java.util.List;
 
 @Component
 public class InMemoryUserStorage implements UserStorage {
+    private long uniqueId;
     private final HashMap<Long, User> users = new HashMap<>();
 
     @Override
     public User add(User user) {
-        users.put(user.getId(), user);
+        user.setId(generateId());
+        users.put(uniqueId, user);
         return user;
     }
 
@@ -42,4 +44,9 @@ public class InMemoryUserStorage implements UserStorage {
     public boolean isPresent(Long userId) {
         return users.containsKey(userId);
     }
+
+    private long generateId() {
+        return ++uniqueId;
+    }
+
 }

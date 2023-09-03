@@ -9,11 +9,13 @@ import java.util.Map;
 
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
+    private long uniqueId;
     private final Map<Long, Film> films = new HashMap<>();
 
     @Override
     public Film add(Film film) {
-        films.put(film.getId(), film);
+        film.setId(generateId());
+        films.put(uniqueId, film);
         return film;
     }
 
@@ -43,4 +45,9 @@ public class InMemoryFilmStorage implements FilmStorage {
     public boolean isPresent(Long filmId) {
         return films.containsKey(filmId);
     }
+
+    private long generateId() {
+        return ++uniqueId;
+    }
+
 }

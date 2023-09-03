@@ -1,11 +1,9 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.InvalidPathVariableException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.exception.WrongFilmIdException;
 import ru.yandex.practicum.filmorate.exception.WrongUserIdException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -17,14 +15,9 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class UserService {
-    private long uniqueId;
     private final UserStorage userStorage;
-
-    @Autowired
-    UserService(UserStorage userStorage) {
-        this.userStorage = userStorage;
-    }
 
     public User create(User user) {
 
@@ -33,8 +26,6 @@ public class UserService {
         if (isNotValid(user)) {
             throw new ValidationException("Can't create new user. Check your data.");
         }
-
-        user.setId(generateId());
 
         userStorage.add(user);
         log.info("New user added {}", user);
@@ -49,11 +40,11 @@ public class UserService {
             throw new ValidationException("Can't update user. Check your data.");
         }
 
-        if (userStorage.isPresent(user.getId())) {
-            return userStorage.update(user);
+        if (!userStorage.isPresent(user.getId())) {
+            throw new WrongUserIdException("Can't find user to update.");
         }
 
-        throw new WrongUserIdException("Can't find user to update.");
+        return userStorage.update(user);
     }
 
     public List<User> getAll() {
@@ -65,28 +56,19 @@ public class UserService {
         return user;
     }
 
-    public void addFriend(String userId, String friendId) {
-        long parsedUserId = parsePathParam(userId);
-        long parsedFriendId = parsePathParam(friendId);
-
-        userStorage.getById(parsedUserId).addFriend(parsedFriendId);
-        userStorage.getById(parsedFriendId).addFriend(parsedUserId);
+    public void addFriend(long userId, long friendId) {
+        userStorage.getById(userId).addFriend(friendId);
+        userStorage.getById(friendId).addFriend(userId);
     }
 
-    public void deleteFriend(String userId, String friendId) {
-        long parsedUserId = parsePathParam(userId);
-        long parsedFriendId = parsePathParam(friendId);
-
-        userStorage.getById(parsedUserId).removeFriend(parsedFriendId);
-        userStorage.getById(parsedFriendId).removeFriend(parsedUserId);
+    public void deleteFriend(long userId, long friendId) {
+        userStorage.getById(userId).removeFriend(friendId);
+        userStorage.getById(friendId).removeFriend(userId);
     }
 
-    public List<User> findCommonFriends(String userId, String otherId) {
-        long parsedUserId = parsePathParam(userId);
-        long parsedOtherId = parsePathParam(otherId);
-
-        Set<Long> friendIds = userStorage.getById(parsedOtherId).getFriends();
-        return userStorage.getById(parsedUserId).getFriends().stream()
+    public List<User> findCommonFriends(long userId, long otherId) {
+        Set<Long> friendIds = userStorage.getById(otherId).getFriends();
+        return userStorage.getById(userId).getFriends().stream()
                 .filter(friendIds::contains)
                 .map(userStorage::getById)
                 .collect(Collectors.toList());
@@ -97,6 +79,25 @@ public class UserService {
                 || user.getBirthday().isAfter(LocalDate.now());
     }
 
+    public User getById(long userId) {
+        if (!userStorage.isPresent(userId)) {
+            throw new WrongUserIdException("User with such id doesn't exist.");
+        }
+
+        return userStorage.getById(userId);
+    }
+
+    public List<User> getFriends(long userId) {
+
+        if (!userStorage.isPresent(userId)) {
+            throw new WrongUserIdException("User with such id doesn't exist.");
+        }
+
+        return userStorage.getById(userId).getFriends().stream()
+                .map(userStorage::getById)
+                .collect(Collectors.toList());
+    }
+
     private void changeNameToLogin(User user) {
         if (user.getName() == null || user.getName().isEmpty() || user.getName().isBlank()) {
             log.info("Changed user name to user login");
@@ -104,46 +105,4 @@ public class UserService {
         }
     }
 
-    private long generateId() {
-        return ++uniqueId;
-    }
-
-    public User getById(String userId) {
-        long parsedUserId = parsePathParam(userId);
-
-        if (userStorage.isPresent(parsedUserId)) {
-            return userStorage.getById(parsedUserId);
-        }
-
-        log.warn("Requested non-existent user. Id {}", userId);
-        throw new WrongUserIdException("User with such id doesn't exist.");
-    }
-
-    public List<User> getFriends(String userId) {
-        long parsedUserId = parsePathParam(userId);
-        if (userStorage.isPresent(parsedUserId)) {
-            return userStorage.getById(parsedUserId).getFriends().stream()
-                    .map(userStorage::getById)
-                    .collect(Collectors.toList());
-        }
-
-        log.warn("Requested non-existent user. Id {}", userId);
-        throw new WrongUserIdException("User with such id doesn't exist.");
-    }
-
-    private Long parsePathParam(String pathId) {
-        long pathVariable;
-        try {
-            pathVariable = Long.parseLong(pathId);
-        } catch (NumberFormatException e) {
-            log.warn("Parser. Path variable has wrong format {}", pathId);
-            throw new InvalidPathVariableException("Incorrect user id parameter format.");
-        }
-        if (pathVariable < 0) {
-            log.warn("Parser. Requested user with wrong id {}", pathVariable);
-            throw new WrongFilmIdException("User with such id doesn't exist.");
-        }
-
-        return pathVariable;
-    }
 }
