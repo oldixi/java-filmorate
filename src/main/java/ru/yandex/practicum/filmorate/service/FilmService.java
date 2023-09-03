@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.exception.WrongFilmIdException;
+import ru.yandex.practicum.filmorate.exception.WrongUserIdException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
@@ -45,26 +46,41 @@ public class FilmService {
     }
 
     public void addLike(long userId, long filmId) {
+        if (isIncorrectId(userId)) {
+            throw new WrongUserIdException("Param must be more then 0");
+        }
+
+        if (isIncorrectId(filmId)) {
+            throw new WrongFilmIdException("Param must be more then 0");
+        }
 
         if (!filmStorage.isPresent(filmId)) {
             throw new WrongFilmIdException("There is no film with such id.");
         }
 
         filmStorage.getById(filmId).addLike(userId);
-        return;
     }
 
     public void deleteLike(long userId, long filmId) {
+        if (isIncorrectId(userId)) {
+            throw new WrongUserIdException("Param must be more then 0");
+        }
+
+        if (isIncorrectId(filmId)) {
+            throw new WrongFilmIdException("Param must be more then 0");
+        }
 
         if (!filmStorage.isPresent(filmId)) {
             throw new WrongFilmIdException("There is no film with such id.");
         }
 
         filmStorage.getById(filmId).deleteLike(userId);
-        return;
     }
 
     public Film getFilmById(long filmId) {
+        if (isIncorrectId(filmId)) {
+            throw new WrongFilmIdException("Param must be more then 0");
+        }
 
         if (!filmStorage.isPresent(filmId)) {
             throw new WrongFilmIdException("Film with such id doesn't exist");
@@ -78,12 +94,19 @@ public class FilmService {
     }
 
     public List<Film> getTopFilms(long count) {
+        if (isIncorrectId(count)) {
+            throw new WrongFilmIdException("Param must be more then 0");
+        }
 
         return filmStorage.getAllFilms().stream().sorted(Comparator.comparing(film -> -film.getLikeIds().size())).limit(count).collect(Collectors.toList());
     }
 
     private boolean isNotValid(Film film) {
         return film.getReleaseDate().isBefore(EARLIESTFILMRELEASE);
+    }
+
+    private boolean isIncorrectId(long id) {
+        return id <= 0;
     }
 
 }

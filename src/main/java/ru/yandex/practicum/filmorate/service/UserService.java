@@ -57,16 +57,28 @@ public class UserService {
     }
 
     public void addFriend(long userId, long friendId) {
+        if (isIncorrectId(userId) || isIncorrectId(friendId)) {
+            throw new WrongUserIdException("Param must be more then 0");
+        }
+
         userStorage.getById(userId).addFriend(friendId);
         userStorage.getById(friendId).addFriend(userId);
     }
 
     public void deleteFriend(long userId, long friendId) {
+        if (isIncorrectId(userId) || isIncorrectId(friendId)) {
+            throw new WrongUserIdException("Param must be more then 0");
+        }
+
         userStorage.getById(userId).removeFriend(friendId);
         userStorage.getById(friendId).removeFriend(userId);
     }
 
     public List<User> findCommonFriends(long userId, long otherId) {
+        if (isIncorrectId(userId) || isIncorrectId(otherId)) {
+            throw new WrongUserIdException("Param must be more then 0");
+        }
+
         Set<Long> friendIds = userStorage.getById(otherId).getFriends();
         return userStorage.getById(userId).getFriends().stream()
                 .filter(friendIds::contains)
@@ -80,6 +92,10 @@ public class UserService {
     }
 
     public User getById(long userId) {
+        if (isIncorrectId(userId)) {
+            throw new WrongUserIdException("Param must be more then 0");
+        }
+
         if (!userStorage.isPresent(userId)) {
             throw new WrongUserIdException("User with such id doesn't exist.");
         }
@@ -88,6 +104,9 @@ public class UserService {
     }
 
     public List<User> getFriends(long userId) {
+        if (isIncorrectId(userId)) {
+            throw new WrongUserIdException("Param must be more then 0");
+        }
 
         if (!userStorage.isPresent(userId)) {
             throw new WrongUserIdException("User with such id doesn't exist.");
@@ -103,6 +122,10 @@ public class UserService {
             log.info("Changed user name to user login");
             user.setName(user.getLogin());
         }
+    }
+
+    private boolean isIncorrectId(long id) {
+        return id <= 0;
     }
 
 }
