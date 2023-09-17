@@ -1,72 +1,70 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
-import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @RestController
 @RequestMapping("/films")
+@RequiredArgsConstructor
 public class FilmController {
-    private static final LocalDate EARLIEST_FILM_RELEASE = LocalDate.of(1895, 12, 28);
-    private final Map<Long, Film> films = new HashMap<>();
-    private long uniqueId;
+    private final FilmService filmService;
 
     @GetMapping
-    public List<Film> getFilms() {
+    public List<Film> getAllFilms() {
         log.info("Get list of films.");
-        return List.copyOf(films.values());
+        return filmService.getAllFilms();
+    }
+
+    @GetMapping("/{id}")
+    public Film getFilmById(@PathVariable long id) {
+        log.info("Requested film {}", id);
+        return filmService.getFilmById(id);
+    }
+
+    @GetMapping("/popular")
+    public List<Film> getPopularFilms(@RequestParam(defaultValue = "10") long count) {
+        log.info("Requested most popular {} films", count);
+        return filmService.getTopFilms(count);
     }
 
     @PostMapping
     public Film post(@Valid @RequestBody Film film) {
-        if (isNotValid(film)) {
-            log.warn("Film is not valid. {}", film);
-            throw new ValidationException("Film validation has been failed");
-        }
+        log.info("Requested add film {}", film);
+        return filmService.addFilm(film);
+    }
 
-        if (film.getId() == 0) {
-            film.setId(generateId());
-        }
-
-        films.put(uniqueId, film);
-        log.info("Film added {}. Total films quantity {}", film, films.size());
-        return film;
+    @PutMapping("/{id}/like/{userId}")
+    public Film addLike(@PathVariable long id, @PathVariable long userId) {
+        log.info("Requested add like to film {} from user {}", id, userId);
+        filmService.addLike(userId, id);
+        return filmService.getFilmById(id);
     }
 
     @PutMapping
     public Film update(@Valid @RequestBody Film film) {
-        if (isNotValid(film)) {
-            log.warn("Film is not valid. {}", film);
-            throw new ValidationException("Film validation has been failed");
-        }
-
-        if (films.containsKey(film.getId())) {
-            films.put(film.getId(), film);
-            log.info("Film updated {}", film);
-            return film;
-        }
-
-        throw new ValidationException("Can't find the film to update");
+        log.info("Requested update film {}", film);
+        return filmService.update(film);
     }
 
-    private boolean isNotValid(Film film) {
-        return film.getReleaseDate().isBefore(EARLIEST_FILM_RELEASE);
+    @DeleteMapping("/{id}/like/{userId}")
+    public void deleteLike(@PathVariable long id, @PathVariable long userId) {
+        log.info("Requested delete like to film {} from user {}", id, userId);
+        filmService.deleteLike(userId, id);
     }
 
-    private long generateId() {
-        return ++uniqueId;
-    }
 }

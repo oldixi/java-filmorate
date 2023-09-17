@@ -1,82 +1,73 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
-import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @RestController
 @RequestMapping("/users")
+@RequiredArgsConstructor
 public class UserController {
-    private final Map<Long, User> users = new HashMap<>();
-    private long uniqueId;
-
+    private final UserService userService;
 
     @GetMapping
     public List<User> getUsers() {
-        return List.copyOf(users.values());
+        log.info("Requested all users");
+        return userService.getAll();
+    }
+
+    @GetMapping("/{id}")
+    public User getById(@PathVariable long id) {
+        log.info("Requested user with {} id", id);
+        return userService.getById(id);
+    }
+
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public List<User> getCommonFriends(@PathVariable long id, @PathVariable long otherId) {
+        log.info("Requested common friend list between user {} and other user {}", id, otherId);
+        return userService.findCommonFriends(id, otherId);
+    }
+
+    @GetMapping("/{id}/friends")
+    public List<User> getFriends(@PathVariable long id) {
+        log.info("Requested user {} friends list", id);
+        return userService.getFriends(id);
     }
 
     @PostMapping
     public User post(@Valid @RequestBody User user) {
-        changeNameToLogin(user);
-
-        if (isNotValid(user)) {
-            log.info("User is not valid {}", user);
-            throw new ValidationException("User validation has been failed");
-        }
-
-        if (user.getId() == 0) {
-            user.setId(generateId());
-        }
-
-        users.put(uniqueId, user);
-        log.info("New user added {}", user);
-        return user;
+        log.info("Requested create new user {}", user);
+        return userService.create(user);
     }
 
     @PutMapping
     public User update(@Valid @RequestBody User user) {
-        changeNameToLogin(user);
-
-        if (isNotValid(user)) {
-            log.info("User is not valid {}", user);
-            throw new ValidationException("User validation has been failed");
-        }
-
-        if (users.containsKey(user.getId())) {
-            users.put(user.getId(), user);
-            log.info("User {} has been updated", user.getLogin());
-            return user;
-        }
-
-        throw new ValidationException("Can't find user to update");
+        log.info("Requested update user {}", user);
+        return userService.update(user);
     }
 
-    private boolean isNotValid(User user) {
-        return user.getLogin().contains(" ")
-                || user.getBirthday().isAfter(LocalDate.now());
+    @PutMapping("/{id}/friends/{friendId}")
+    public void addFriend(@PathVariable long id, @PathVariable long friendId) {
+        log.info("Requested add friend with id {} to user {}", friendId, id);
+        userService.addFriend(id, friendId);
     }
 
-    private void changeNameToLogin(User user) {
-        if (user.getName() == null || user.getName().isEmpty() || user.getName().isBlank()) {
-            user.setName(user.getLogin());
-        }
-    }
-
-    private long generateId() {
-        return ++uniqueId;
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public void deleteFriend(@PathVariable long id, @PathVariable long friendId) {
+        log.info("Requested delete friend with id {} from user {}", friendId, id);
+        userService.deleteFriend(id, friendId);
     }
 }
