@@ -30,6 +30,10 @@ public class User {
     private Set<Long> incomingFriendRequest = new HashSet<>();
     private Set<Long> outgoingFriendRequest = new HashSet<>();
 
+    public void addFriend(Long friendId) {
+        friends.add(friendId);
+    }
+
     public void sendFriendRequest(Long friendId) {
         outgoingFriendRequest.add(friendId);
     }
