@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -20,13 +21,9 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping("/films")
+@RequiredArgsConstructor
 public class FilmController {
     private final FilmService filmService;
-
-    @Autowired
-    public FilmController(FilmService filmService) {
-        this.filmService = filmService;
-    }
 
     @GetMapping
     public List<Film> getAllFilms() {
@@ -38,19 +35,6 @@ public class FilmController {
     public Film getFilmById(@PathVariable long id) {
         log.info("Requested film {}", id);
         return filmService.getFilmById(id);
-    }
-
-    @PutMapping("/{id}/like/{userId}")
-    public Film addLike(@PathVariable long id, @PathVariable long userId) {
-        log.info("Requested add like to film {} from user {}", id, userId);
-        filmService.addLike(userId, id);
-        return filmService.getFilmById(id);
-    }
-
-    @DeleteMapping("/{id}/like/{userId}")
-    public void deleteLike(@PathVariable long id, @PathVariable long userId) {
-        log.info("Requested delete like to film {} from user {}", id, userId);
-        filmService.deleteLike(userId, id);
     }
 
     @GetMapping("/popular")
@@ -65,10 +49,23 @@ public class FilmController {
         return filmService.addFilm(film);
     }
 
+    @PutMapping("/{id}/like/{userId}")
+    public Film addLike(@PathVariable long id, @PathVariable long userId) {
+        log.info("Requested add like to film {} from user {}", id, userId);
+        filmService.addLike(userId, id);
+        return filmService.getFilmById(id);
+    }
+
     @PutMapping
     public Film update(@Valid @RequestBody Film film) {
         log.info("Requested update film {}", film);
         return filmService.update(film);
+    }
+
+    @DeleteMapping("/{id}/like/{userId}")
+    public void deleteLike(@PathVariable long id, @PathVariable long userId) {
+        log.info("Requested delete like to film {} from user {}", id, userId);
+        filmService.deleteLike(userId, id);
     }
 
 }

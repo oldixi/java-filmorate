@@ -61,8 +61,18 @@ public class UserService {
             throw new WrongUserIdException("Param must be more then 0");
         }
 
-        userStorage.getById(userId).addFriend(friendId);
-        userStorage.getById(friendId).addFriend(userId);
+        Set<Long> incomingRequests = userStorage.getById(userId).getIncomingFriendRequest();
+
+        if (incomingRequests.contains(friendId)) {
+            userStorage.getById(userId).acceptFriendship(friendId);
+            userStorage.getById(friendId).getFriendConformation(userId);
+        } else {
+            userStorage.getById(userId).sendFriendRequest(friendId);
+            userStorage.getById(friendId).getFriendRequest(userId);
+        }
+
+//        userStorage.getById(userId).addFriend(friendId);
+//        userStorage.getById(friendId).addFriend(userId);
     }
 
     public void deleteFriend(long userId, long friendId) {

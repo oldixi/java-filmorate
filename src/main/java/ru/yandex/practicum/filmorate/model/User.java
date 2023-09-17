@@ -27,8 +27,24 @@ public class User {
     private String name;
     private LocalDate birthday;
     private Set<Long> friends = new HashSet<>();
+    private Set<Long> incomingFriendRequest = new HashSet<>();
+    private Set<Long> outgoingFriendRequest = new HashSet<>();
 
-    public void addFriend(Long friendId) {
+    public void sendFriendRequest(Long friendId) {
+        outgoingFriendRequest.add(friendId);
+    }
+
+    public void getFriendRequest(Long friendId) {
+        incomingFriendRequest.add(friendId);
+    }
+
+    public void acceptFriendship(Long friendId) {
+        incomingFriendRequest.remove(friendId);
+        friends.add(friendId);
+    }
+
+    public void getFriendConformation(Long friendId) {
+        outgoingFriendRequest.remove(friendId);
         friends.add(friendId);
     }
 
