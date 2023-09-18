@@ -2,20 +2,26 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.dao.FriendsDbStorage;
 
 import java.util.*;
 
 @Slf4j
 @Service
 public class UserService {
-    private final UserStorage userStorage;
-
     @Autowired
-    public UserService(UserStorage userStorage) {
+    @Qualifier("userDbStorage")
+    private final UserStorage userStorage;
+    @Autowired
+    private final FriendsDbStorage friendsDbStorage;
+
+    public UserService(@Qualifier("userDbStorage") UserStorage userStorage, FriendsDbStorage friendsDbStorage) {
         this.userStorage = userStorage;
+        this.friendsDbStorage = friendsDbStorage;
     }
 
     public User addUser(User user) {
@@ -35,73 +41,31 @@ public class UserService {
     }
 
     public void addFriend(long userId, long friendId) {
-        log.info(String.format("Добавление друга %d для пользователя %d", friendId, userId));
-        Set<Long> friendsOfUser = new HashSet<>();
-        Set<Long> friendsOfFriend = new HashSet<>();
-        User user = userStorage.getUserById(userId);
-        User friend = userStorage.getUserById(friendId);
-        if (user.getFriends() != null) {
-            friendsOfUser = user.getFriends();
+        log.info(String.format("Добавление друга %d для пользователя %d.", friendId, userId));
+        User requestUser = userStorage.getUserById(friendId);
+        User acceptUser = userStorage.getUserById(userId);
+        if (requestUser != null && acceptUser != null) {
+            friendsDbStorage.addFriendRequest(requestUser, acceptUser);
+            friendsDbStorage.acceptFriendRequest(requestUser, acceptUser);
         }
-        if (friend.getFriends() != null) {
-            friendsOfFriend = friend.getFriends();
-        }
-        friendsOfUser.add(friendId);
-        friendsOfFriend.add(userId);
-        user.setFriends(friendsOfUser);
-        friend.setFriends(friendsOfFriend);
-        userStorage.updateUser(user);
-        userStorage.updateUser(friend);
     }
 
     public void deleteFriend(long userId, long friendId) {
-        log.info(String.format("Удаление друга %d для пользователя %d", friendId, userId));
-        Set<Long> friendsOfUser = new HashSet<>();
-        Set<Long> friendsOfFriend = new HashSet<>();
-        User user = userStorage.getUserById(userId);
-        User friend = userStorage.getUserById(friendId);
-        if (user.getFriends() != null) {
-            friendsOfUser = user.getFriends();
+        log.info(String.format("Удаление друга %d для пользователя %d.", friendId, userId));
+        User requestUser = userStorage.getUserById(friendId);
+        User acceptUser = userStorage.getUserById(userId);
+        if (requestUser != null && acceptUser != null) {
+            friendsDbStorage.deleteFriend(requestUser, acceptUser);
         }
-        if (friend.getFriends() != null) {
-            friendsOfFriend = friend.getFriends();
-        }
-        if (friendsOfUser.contains(friendId)) {
-            friendsOfUser.remove(friendId);
-        }
-        if (friendsOfFriend.contains(userId)) {
-            friendsOfFriend.remove(userId);
-        }
-        user.setFriends(friendsOfUser);
-        friend.setFriends(friendsOfFriend);
-        userStorage.updateUser(user);
-        userStorage.updateUser(friend);
     }
 
     public List<User> getFriendsList(long userId) {
-        List<User> friendsList = new ArrayList<>();
-        log.info(String.format("Список друзей для пользователя %d.", userId));
-        Set<Long> friendsOfUserId = userStorage.getUserById(userId).getFriends();
-        if (friendsOfUserId != null) {
-            for (Long friendId : friendsOfUserId) {
-                friendsList.add(userStorage.getUserById(friendId));
-            }
-        }
-        return friendsList;
+        return friendsDbStorage.getFriendsList(userId);
     }
 
     public List<User> getCommonFriendsList(long userId, long otherId) {
-        final List<User> friendsCommonList = new ArrayList<>();
-        log.info(String.format("Список общих друзей для пользователя %d и %d", userId, otherId));
-        Set<Long> friendsOfUserId = userStorage.getUserById(userId).getFriends();
-        Set<Long> friendsOfFriendId = userStorage.getUserById(otherId).getFriends();
-        if (friendsOfUserId == null || friendsOfFriendId == null) {
-            return friendsCommonList;
-        }
-        friendsOfUserId
-                .stream()
-                .filter(friendsOfFriendId::contains)
-                .forEach(friend -> friendsCommonList.add(userStorage.getUserById(friend)));
-        return friendsCommonList;
+        return friendsDbStorage.getCommonFriendsList(userId, otherId);
     }
+
+
 }
