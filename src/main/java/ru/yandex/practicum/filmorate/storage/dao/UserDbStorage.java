@@ -65,12 +65,12 @@ public class UserDbStorage implements UserStorage {
         if (user.getId() != 0 && isValid(user) && getUserById(user.getId()) != null) {
             String sql = "update users set name = ?, login = ?, email = ?, birthday = ? " +
                     "where id = ?";
-            jdbcTemplate.update(sql
-                    , user.getName()
-                    , user.getLogin()
-                    , user.getEmail()
-                    , user.getBirthday()
-                    , user.getId());
+            jdbcTemplate.update(sql,
+                    user.getName(),
+                    user.getLogin(),
+                    user.getEmail(),
+                    user.getBirthday(),
+                    user.getId());
             log.info(String.format("Изменен пользователь %d", user.getId()));
             return user;
         }
