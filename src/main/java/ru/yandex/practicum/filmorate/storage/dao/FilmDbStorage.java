@@ -82,9 +82,8 @@ public class FilmDbStorage implements FilmStorage {
 
                 if (film.getGenres() != null) {
                     for (Genre genre : film.getGenres()) {
-                        jdbcTemplate.update("insert into genre_link(film_id, genre_code) values (?, ?)"
-                                , film.getId()
-                                , genre.getId());
+                        jdbcTemplate.update("insert into genre_link(film_id, genre_code) values (?, ?)",
+                                film.getId(), genre.getId());
                     }
                 }
             }
@@ -131,16 +130,14 @@ public class FilmDbStorage implements FilmStorage {
                         .collect(Collectors.toList());
                 genreListIdFromFilm.forEach(genreIdFromFilm -> {
                     if (genreListIdFromDb.size() == 0 || !genreListIdFromDb.contains(genreIdFromFilm)) {
-                        jdbcTemplate.update("insert into genre_link(film_id, genre_code) values (?, ?)"
-                                , film.getId()
-                                , genreIdFromFilm);
+                        jdbcTemplate.update("insert into genre_link(film_id, genre_code) values (?, ?)",
+                                film.getId(), genreIdFromFilm);
                     }
                 });
                 genreListIdFromDb.forEach(genreIdFromDb -> {
                     if (genreListIdFromFilm.size() == 0 || !genreListIdFromFilm.contains(genreIdFromDb)) {
-                        jdbcTemplate.update("delete genre_link where film_id = ? and genre_code = ?"
-                                , film.getId()
-                                , genreIdFromDb);
+                        jdbcTemplate.update("delete genre_link where film_id = ? and genre_code = ?",
+                                film.getId(), genreIdFromDb);
                     }
                 });
             } else if (genreDbStorage.findGenreByFilmId(film.getId()).size() > 0) {
