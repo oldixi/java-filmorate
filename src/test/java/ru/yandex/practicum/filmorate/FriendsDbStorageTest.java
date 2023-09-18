@@ -67,12 +67,12 @@ public class FriendsDbStorageTest {
         user2.setId(2);
         user3.setId(3);
         friendsStorage.addFriendRequest(user1, user2);
-        int status_code = friendsStorage.getFriendRequestStatus(user1, user2);
-        assertEquals(1, status_code);
+        int statusСode = friendsStorage.getFriendRequestStatus(user1, user2);
+        assertEquals(1, statusСode);
 
         friendsStorage.acceptFriendRequest(user1, user2);
-        status_code = friendsStorage.getFriendRequestStatus(user1, user2);
-        assertEquals(2, status_code);
+        statusСode = friendsStorage.getFriendRequestStatus(user1, user2);
+        assertEquals(2, statusСode);
 
         List<User> userList = friendsStorage.getFriendsList(2);
 
