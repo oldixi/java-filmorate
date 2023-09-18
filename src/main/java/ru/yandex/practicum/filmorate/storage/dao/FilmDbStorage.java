@@ -31,7 +31,7 @@ public class FilmDbStorage implements FilmStorage {
     private final MpaDbStorage mpaDbStorage;
     private final GenreDbStorage genreDbStorage;
 
-    public FilmDbStorage(JdbcTemplate jdbcTemplate){
+    public FilmDbStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
         this.mpaDbStorage = new MpaDbStorage(jdbcTemplate);
         this.genreDbStorage = new GenreDbStorage(jdbcTemplate);
@@ -102,20 +102,20 @@ public class FilmDbStorage implements FilmStorage {
                     "set name = ?, description = ?, duration = ?, release_date = ? " +
                     "where id = ?";
             if (film.getMpa() != null) {
-                jdbcTemplate.update(sqlUpdateFilmWithMpa
-                        , film.getName()
-                        , film.getDescription()
-                        , film.getDuration()
-                        , film.getMpa().getId()
-                        , film.getReleaseDate()
-                        , film.getId());
+                jdbcTemplate.update(sqlUpdateFilmWithMpa,
+                        film.getName(),
+                        film.getDescription(),
+                        film.getDuration(),
+                        film.getMpa().getId(),
+                        film.getReleaseDate(),
+                        film.getId());
             } else {
-                jdbcTemplate.update(sqlUpdateFilmWithoutMpa
-                        , film.getName()
-                        , film.getDescription()
-                        , film.getDuration()
-                        , film.getReleaseDate()
-                        , film.getId());
+                jdbcTemplate.update(sqlUpdateFilmWithoutMpa,
+                        film.getName(),
+                        film.getDescription(),
+                        film.getDuration(),
+                        film.getReleaseDate(),
+                        film.getId());
             }
 
             if (film.getGenres() != null && film.getGenres().size() > 0) {

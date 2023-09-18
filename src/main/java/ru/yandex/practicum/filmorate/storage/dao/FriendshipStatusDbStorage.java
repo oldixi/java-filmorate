@@ -23,25 +23,25 @@ public class FriendshipStatusDbStorage {
     }
 
     public FriendshipStatus addFriendshipStatus(FriendshipStatus friendshipStatus) {
-        jdbcTemplate.update("insert into friends_status_dic(status_code, status) values(?, ?)"
-                , friendshipStatus.getId(), friendshipStatus.getName());
+        jdbcTemplate.update("insert into friends_status_dic(status_code, status) values(?, ?)",
+                friendshipStatus.getId(), friendshipStatus.getName());
         return friendshipStatus;
     }
 
     public FriendshipStatus updateFriendshipStatus(FriendshipStatus friendshipStatus) {
-        jdbcTemplate.update("update friends_status_dic set status = ? where status_code = ?"
-                , friendshipStatus.getName(), friendshipStatus.getId());
+        jdbcTemplate.update("update friends_status_dic set status = ? where status_code = ?",
+                friendshipStatus.getName(), friendshipStatus.getId());
         return friendshipStatus;
     }
 
     public Optional<FriendshipStatus> findFriendshipStatusByCode(int code) {
         SqlRowSet friendshipStatusDicRows = jdbcTemplate.queryForRowSet("select * from friends_status_dic where code = ?", code);
         if (friendshipStatusDicRows.next()) {
-            log.info("Найден статус добавления в друзья: {} {}"
-                    , friendshipStatusDicRows.getInt("genre_code")
-                    , friendshipStatusDicRows.getString("genre"));
-            FriendshipStatus friendshipStatus = new FriendshipStatus(friendshipStatusDicRows.getInt("genre_code")
-                    , friendshipStatusDicRows.getString("genre"));
+            log.info("Найден статус добавления в друзья: {} {}",
+                    friendshipStatusDicRows.getInt("genre_code"),
+                    friendshipStatusDicRows.getString("genre"));
+            FriendshipStatus friendshipStatus = new FriendshipStatus(friendshipStatusDicRows.getInt("genre_code"),
+                    friendshipStatusDicRows.getString("genre"));
             return Optional.of(friendshipStatus);
         } else {
             log.info("Термин статуса с кодом {} не найден.", code);
