@@ -18,7 +18,7 @@ import java.util.Optional;
 public class FriendshipStatusDbStorage {
     private final JdbcTemplate jdbcTemplate;
 
-    public FriendshipStatusDbStorage(JdbcTemplate jdbcTemplate){
+    public FriendshipStatusDbStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
