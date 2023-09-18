@@ -154,6 +154,10 @@ public class FilmDbStorage implements FilmStorage {
         return jdbcTemplate.query(sql, (rs, rowNum) -> makeFilm(rs));
     }
 
+    public void deleteFilms() {
+        jdbcTemplate.execute("truncate table films restart identity");
+    }
+
     public Film getFilmById(Long id) {
         SqlRowSet filmRows = jdbcTemplate.queryForRowSet("select * from films where id = ?", id);
         if (!filmRows.next()) {

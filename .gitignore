@@ -7,6 +7,8 @@ mvnw
 mvnw.cmd
 *.mvn/
 *.DS_Store
+/db/
+*.png
 
 ### STS ###
 .apt_generated
