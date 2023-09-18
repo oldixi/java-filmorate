@@ -43,9 +43,9 @@ public class GenreDbStorage {
         }
     }
 
-    public List<Genre> findGenreByFilmId(long film_id) {
+    public List<Genre> findGenreByFilmId(long filmId) {
         String sql = "select gd.* from genre_link gl JOIN genre_dic gd ON gl.genre_code = gd.genre_code where gl.film_id = ?";
-        return jdbcTemplate.query(sql, (rs, rowNum) -> makeGenre(rs), film_id);
+        return jdbcTemplate.query(sql, (rs, rowNum) -> makeGenre(rs), filmId);
     }
 
     public List<Genre> findAllGenre() {
