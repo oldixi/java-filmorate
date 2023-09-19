@@ -15,15 +15,14 @@ import java.util.List;
 @Slf4j
 @Service
 public class FilmService {
-    @Autowired
     @Qualifier("filmDbStorage")
     private final FilmStorage filmStorage;
-    @Autowired
     @Qualifier("userDbStorage")
     private final UserStorage userStorage;
-    @Autowired
+
     private final LikesDbStorage likesDbStorage;
 
+    @Autowired
     public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage, @Qualifier("userDbStorage") UserStorage userStorage, LikesDbStorage likesDbStorage) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;

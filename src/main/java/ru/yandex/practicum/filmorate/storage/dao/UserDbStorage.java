@@ -1,12 +1,11 @@
 package ru.yandex.practicum.filmorate.storage.dao;
 
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -18,9 +17,8 @@ import java.sql.Date;
 import java.time.LocalDate;
 import java.util.*;
 
-@Component("userDbStorage")
+@Repository("userDbStorage")
 @Slf4j
-@Data
 public class UserDbStorage implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
 

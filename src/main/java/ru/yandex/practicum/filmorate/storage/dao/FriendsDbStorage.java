@@ -1,18 +1,16 @@
 package ru.yandex.practicum.filmorate.storage.dao;
 
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
 
-@Component("friendsDbStorage")
+@Repository
 @Slf4j
-@Data
 public class FriendsDbStorage {
     private final JdbcTemplate jdbcTemplate;
     private final UserDbStorage userDbStorage;

@@ -11,9 +11,9 @@ import java.util.List;
 @Slf4j
 @Service
 public class GenreService {
-    @Autowired
     private final GenreDbStorage genreDbStorage;
 
+    @Autowired
     public GenreService(GenreDbStorage genreDbStorage) {
         this.genreDbStorage = genreDbStorage;
     }

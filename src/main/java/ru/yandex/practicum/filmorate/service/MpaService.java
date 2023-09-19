@@ -11,9 +11,9 @@ import java.util.List;
 @Slf4j
 @Service
 public class MpaService {
-    @Autowired
     private final MpaDbStorage mpaDbStorage;
 
+    @Autowired
     public MpaService(MpaDbStorage mpaDbStorage) {
         this.mpaDbStorage = mpaDbStorage;
     }

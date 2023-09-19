@@ -1,10 +1,9 @@
 package ru.yandex.practicum.filmorate.storage.dao;
 
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 
 import java.sql.ResultSet;
@@ -12,9 +11,8 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Optional;
 
-@Component("friendshipStatusDbStorage")
+@Repository
 @Slf4j
-@Data
 public class FriendshipStatusDbStorage {
     private final JdbcTemplate jdbcTemplate;
 
