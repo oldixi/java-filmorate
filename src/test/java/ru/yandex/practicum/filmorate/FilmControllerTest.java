@@ -59,7 +59,7 @@ public class FilmControllerTest {
         Film film = Film.builder()
                 .name("Служебный роман")
                 .description("Комедия про трудовые будни Статистической организации")
-                .releaseDate(InMemoryFilmStorage.MIN_RELEASE_DATE.minusDays(1))
+                .releaseDate(Constants.MIN_RELEASE_DATE.minusDays(1))
                 .duration(159)
                 .build();
 

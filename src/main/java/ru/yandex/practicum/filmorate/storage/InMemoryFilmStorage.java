@@ -3,11 +3,11 @@ package ru.yandex.practicum.filmorate.storage;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.Constants;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,9 +17,6 @@ import java.util.Map;
 @Slf4j
 @Data
 public class InMemoryFilmStorage implements FilmStorage {
-    private static final int DESCRIPTION_LENGTH = 200;
-    public static final LocalDate MIN_RELEASE_DATE = LocalDate.of(1895, 12, 28);
-
     Map<Long, Film> films = new HashMap<>();
     private long idNum;
 
@@ -32,14 +29,14 @@ public class InMemoryFilmStorage implements FilmStorage {
             throw new ValidationException("Наименование фильма - обязательное поле.");
         }
         if (film.getDescription() != null) {
-            if (film.getDescription().length() > DESCRIPTION_LENGTH) {
+            if (film.getDescription().length() > Constants.DESCRIPTION_LENGTH) {
                 throw new ValidationException("Описание фильма ограничено 200 символами.");
             }
         }
         if (film.getDuration() <= 0) {
             throw new ValidationException("Продолжительность фильма должна быть больше 0.");
         }
-        if (film.getReleaseDate() == null || film.getReleaseDate().isBefore(MIN_RELEASE_DATE)) {
+        if (film.getReleaseDate() == null || film.getReleaseDate().isBefore(Constants.MIN_RELEASE_DATE)) {
             throw new ValidationException("Система поддерживает загрузку фильмов с датой выхода после 28 декабря 1895.");
         }
         return true;

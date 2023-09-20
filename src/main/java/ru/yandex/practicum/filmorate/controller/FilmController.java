@@ -13,9 +13,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/films")
 public class FilmController {
+    @Autowired
     private final FilmService filmService;
 
-    @Autowired
     public FilmController(FilmService filmService) {
         this.filmService = filmService;
     }
@@ -26,7 +26,7 @@ public class FilmController {
     }
 
     @PutMapping
-    public Film updateFilm(@RequestBody Film film) {
+    public Film updateFilm(@Valid @RequestBody Film film) {
         return filmService.updateFilm(film);
     }
 

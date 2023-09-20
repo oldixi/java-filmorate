@@ -3,11 +3,11 @@ package ru.yandex.practicum.filmorate.storage;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.Constants;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,8 +17,6 @@ import java.util.Map;
 @Slf4j
 @Data
 public class InMemoryUserStorage implements UserStorage {
-    private static final LocalDate NOW = LocalDate.now();
-
     Map<Long, User> users = new HashMap<>();
     private long idNum;
 
@@ -36,7 +34,7 @@ public class InMemoryUserStorage implements UserStorage {
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
-        if (user.getBirthday() == null || user.getBirthday().isAfter(NOW)) {
+        if (user.getBirthday() == null || user.getBirthday().isAfter(Constants.NOW)) {
             throw new ValidationException("Дата рождения не может быть в будущем.");
         }
         return true;
