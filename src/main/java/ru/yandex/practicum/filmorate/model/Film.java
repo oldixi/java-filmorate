@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.model;
 
+import lombok.Builder;
 import lombok.Data;
-import lombok.experimental.Accessors;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Set;
 
 @Data
-@Accessors(chain = true)
+@Builder
 public class Film {
     private long id;
 
@@ -33,10 +33,10 @@ public class Film {
     @Positive
     private int duration;
 
-    List<Genre> genre;
-    Rating rating;
+    private List<Genre> genre;
+    private Mpa mpa;
 
-    private Set<Long> likeIds = new HashSet<>();
+    private Set<Long> likeIds;
 
     public void addLike(Long userId) {
         likeIds.add(userId);

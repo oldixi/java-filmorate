@@ -1,13 +1,14 @@
-package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.storage.impl;
 
-import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Component
+//@Component
 public class InMemoryFilmStorage implements FilmStorage {
     private long uniqueId;
     private final Map<Long, Film> films = new HashMap<>();
@@ -44,6 +45,16 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public boolean isPresent(Long filmId) {
         return films.containsKey(filmId);
+    }
+
+    @Override
+    public List<Genre> getAllGenres() {
+        return null;
+    }
+
+    @Override
+    public Genre getGenreById(int id) {
+        return null;
     }
 
     private long generateId() {

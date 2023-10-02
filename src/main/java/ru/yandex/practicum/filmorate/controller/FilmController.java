@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
@@ -40,6 +41,16 @@ public class FilmController {
     public List<Film> getPopularFilms(@RequestParam(defaultValue = "10") long count) {
         log.info("Requested most popular {} films", count);
         return filmService.getTopFilms(count);
+    }
+
+    @GetMapping("/genres")
+    public List<Genre> getAllGenres() {
+        return filmService.getAllGenres();
+    }
+
+    @GetMapping("/genres/{id}")
+    public Genre getGenreById(@RequestParam int id) {
+        return filmService.getGenreById(id);
     }
 
     @PostMapping
