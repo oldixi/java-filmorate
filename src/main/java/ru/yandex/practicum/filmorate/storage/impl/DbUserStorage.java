@@ -22,6 +22,7 @@ import java.util.Set;
 public class DbUserStorage implements UserStorage {
 
     private final JdbcTemplate jdbcTemplate;
+
     @Override
     public User add(User user) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
