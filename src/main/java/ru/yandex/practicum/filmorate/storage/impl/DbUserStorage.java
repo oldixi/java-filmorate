@@ -84,11 +84,10 @@ public class DbUserStorage implements UserStorage {
 
     @Override
     public List<User> getAll() {
-        List<User> users = jdbcTemplate.query(
+        return jdbcTemplate.query(
                 "select id, name, login, email, birthday from users",
                 this::mapper
         );
-        return users;
     }
 
     @Override

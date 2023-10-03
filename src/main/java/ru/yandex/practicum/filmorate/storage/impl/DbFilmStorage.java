@@ -98,11 +98,10 @@ public class DbFilmStorage implements FilmStorage {
 
     @Override
     public List<Film> getAllFilms() {
-        List<Film> films = jdbcTemplate.query(
+        return jdbcTemplate.query(
                 "select id, name, description, release_date, duration, rating from films",
                 this::mapper
         );
-        return films;
     }
 
     @Override

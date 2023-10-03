@@ -86,9 +86,9 @@ public class FilmService {
             throw new WrongFilmIdException("Param must be more then 0");
         }
 
-//        if (!filmStorage.isPresent(filmId)) {
-//            throw new WrongFilmIdException("Film with such id doesn't exist");
-//        }
+        if (!filmStorage.isPresent(filmId)) {
+            throw new WrongFilmIdException("Film with such id doesn't exist");
+        }
 
         try {
             return filmStorage.getById(filmId);
