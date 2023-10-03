@@ -31,8 +31,9 @@ public class User {
     private Set<Long> incomingFriendRequest = new HashSet<>();
     private Set<Long> outgoingFriendRequest = new HashSet<>();
 
-    public void addFriend(Long friendId) {
+    public User addFriend(Long friendId) {
         friends.add(friendId);
+        return this;
     }
 
     public void sendFriendRequest(Long friendId) {
@@ -53,7 +54,8 @@ public class User {
         friends.add(friendId);
     }
 
-    public void removeFriend(Long friendId) {
+    public User removeFriend(Long friendId) {
         friends.remove(friendId);
+        return this;
     }
 }

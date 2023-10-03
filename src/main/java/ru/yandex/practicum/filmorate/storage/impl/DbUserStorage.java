@@ -40,7 +40,7 @@ public class DbUserStorage implements UserStorage {
         Set<Long> friends = user.getFriends();
         if (friends != null) {
             friends.forEach(friendId -> jdbcTemplate.update(
-                    "insert into friend (user_id, friend_id) values (?, ?)",
+                    "insert into friends (user_id, friend_id) values (?, ?)",
                     keyHolder.getKey().longValue(),
                     friendId));
         }
@@ -60,7 +60,8 @@ public class DbUserStorage implements UserStorage {
         Set<Long> friends = user.getFriends();
         if (friends != null) {
             friends.forEach(friendId -> jdbcTemplate.update(
-                    "insert into friend (user_id, friend_id) values (?, ?)",
+                    "insert into friends (user_id, friend_id) values (?, ?)",
+                    user.getId(),
                     friendId));
         }
         return user;

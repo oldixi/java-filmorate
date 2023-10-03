@@ -18,6 +18,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -68,6 +69,14 @@ public class DbFilmStorage implements FilmStorage {
                     "insert into film_genre (film_id, genre_id) values (?, ?)",
                     film.getId(),
                     genre.getId()));
+            film.setGenres(filmGenres.stream().distinct().collect(Collectors.toList()));
+        }
+        Set<Long> likeIds = film.getLikeIds();
+        if (likeIds != null) {
+            likeIds.forEach(userId -> jdbcTemplate.update(
+                    "insert into film_like (film_id, user_id) values (?, ?)",
+                    film.getId(),
+                    userId));
         }
         return film;
     }

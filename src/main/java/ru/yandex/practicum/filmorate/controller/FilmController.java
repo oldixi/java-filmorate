@@ -73,7 +73,7 @@ public class FilmController {
     }
 
     @PutMapping("/films/{id}/like/{userId}")
-    public Film addLike(@PathVariable long id, @PathVariable long userId) {
+    public Film addLike(@PathVariable long id, @PathVariable long userId) throws SQLException {
         log.info("Requested add like to film {} from user {}", id, userId);
         filmService.addLike(userId, id);
         return filmService.getFilmById(id);
@@ -86,7 +86,7 @@ public class FilmController {
     }
 
     @DeleteMapping("/films/{id}/like/{userId}")
-    public void deleteLike(@PathVariable long id, @PathVariable long userId) {
+    public void deleteLike(@PathVariable long id, @PathVariable long userId) throws SQLException {
         log.info("Requested delete like to film {} from user {}", id, userId);
         filmService.deleteLike(userId, id);
     }

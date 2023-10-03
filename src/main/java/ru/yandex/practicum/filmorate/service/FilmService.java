@@ -48,7 +48,7 @@ public class FilmService {
         return filmStorage.update(film);
     }
 
-    public void addLike(long userId, long filmId) {
+    public void addLike(long userId, long filmId) throws SQLException {
         if (isIncorrectId(filmId)) {
             throw new WrongFilmIdException("Param must be more then 0");
         }
@@ -62,10 +62,10 @@ public class FilmService {
         }
 
         log.info("Like added to film {} from user {}", filmId, userId);
-        //filmStorage.getById(filmId).addLike(userId);
+        filmStorage.update(filmStorage.getById(filmId).addLike(userId));
     }
 
-    public void deleteLike(long userId, long filmId) {
+    public void deleteLike(long userId, long filmId) throws SQLException {
         if (isIncorrectId(userId)) {
             throw new WrongUserIdException("Param must be more then 0");
         }
@@ -78,7 +78,7 @@ public class FilmService {
             throw new WrongFilmIdException("There is no film with such id.");
         }
 
-      //  filmStorage.getById(filmId).deleteLike(userId);
+        filmStorage.update(filmStorage.getById(filmId).deleteLike(userId));
     }
 
     public Film getFilmById(long filmId) {
