@@ -33,7 +33,7 @@ public class Film {
     @Positive
     private int duration;
 
-    private List<Genre> genre;
+    private List<Genre> genres;
     private Mpa mpa;
 
     private Set<Long> likeIds;

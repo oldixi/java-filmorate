@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage.impl;
 
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.HashMap;
@@ -54,6 +55,16 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Genre getGenreById(int id) {
+        return null;
+    }
+
+    @Override
+    public List<Mpa> getAllMpas() {
+        return null;
+    }
+
+    @Override
+    public Mpa getMpaById(int id) {
         return null;
     }
 

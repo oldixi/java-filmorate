@@ -5,6 +5,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exception.WrongFilmIdException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -13,8 +14,10 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 @Repository
 @RequiredArgsConstructor
@@ -26,10 +29,7 @@ public class DbFilmStorage implements FilmStorage {
     public Film add(Film film) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         String sqlQuery = "insert into films (name, description, release_date, duration, rating) values (?, ?, ?, ?, ?)";
-//        Integer rating_id = jdbcTemplate.queryForObject(
-//                "select id from ratings where name = ?",
-//                Integer.class,
-//                String.valueOf(film.getMpa().getName()));
+
         jdbcTemplate.update(connection -> {
             PreparedStatement stmt = connection.prepareStatement(sqlQuery, new String[]{"id"});
             stmt.setString(1, film.getName());
@@ -41,7 +41,7 @@ public class DbFilmStorage implements FilmStorage {
         }, keyHolder);
         film.setId(Objects.requireNonNull(keyHolder.getKey()).longValue());
 
-        List<Genre> filmGenres = film.getGenre();
+        List<Genre> filmGenres = film.getGenres();
         if (filmGenres != null) {
             filmGenres.forEach(genre -> jdbcTemplate.update(
                     "insert into film_genre (film_id, genre_id) values (?, ?)",
@@ -53,55 +53,136 @@ public class DbFilmStorage implements FilmStorage {
 
     @Override
     public Film update(Film film) {
-        return null;
-    }
-
-    @Override
-    public Film delete(Film film) {
-        return null;
-    }
-
-    @Override
-    public Film getById(Long filmId) throws SQLException {
-        String sqlQuery = "select id, name, description, release_date, duration, rating from films where id=?";
-        Film film = jdbcTemplate.queryForObject(sqlQuery, this::mapper, filmId);
-        sqlQuery = "select name from ratings where ";
+        jdbcTemplate.update("update films set name = ?, description = ?, release_date = ?, duration = ?, rating = ?" +
+                "where id = ?",
+                film.getName(),
+                film.getDescription(),
+                java.sql.Date.valueOf(film.getReleaseDate()),
+                film.getDuration(),
+                film.getMpa().getId(),
+                film.getId());
+        jdbcTemplate.update("delete from film_genre where film_id = ?", film.getId());
+        List<Genre> filmGenres = film.getGenres();
+        if (filmGenres != null) {
+            filmGenres.stream().distinct().forEach(genre -> jdbcTemplate.update(
+                    "insert into film_genre (film_id, genre_id) values (?, ?)",
+                    film.getId(),
+                    genre.getId()));
+        }
         return film;
     }
 
     @Override
+    public Film delete(Film film) {
+        jdbcTemplate.update("delete from films where id = ? cascade", film.getId());
+        return film;
+    }
+
+    @Override
+    public Film getById(Long filmId) throws SQLException {
+        if (!isPresent(filmId)) {
+            throw new WrongFilmIdException("No film with such id=" + filmId);
+        }
+        String sqlQuery = "select id, name, description, release_date, duration, rating from films where id=?";
+        return jdbcTemplate.queryForObject(sqlQuery, this::mapper, filmId);
+    }
+
+    @Override
     public List<Film> getAllFilms() {
-        return List.of();
+        List<Film> films = jdbcTemplate.query(
+                "select id, name, description, release_date, duration, rating from films",
+                this::mapper
+        );
+        return films;
     }
 
     @Override
     public boolean isPresent(Long filmId) {
-        return false;
+        return jdbcTemplate.queryForObject("select count(id) from films where id = ?",
+                Integer.class,
+                filmId) != 0;
     }
 
     @Override
     public List<Genre> getAllGenres() {
-        return jdbcTemplate.queryForList(
+        return jdbcTemplate.query(
                 "select id, name from genres",
-                Genre.class);
+                (resultSetGenre, rowNumGenre) -> {
+                    Genre genre = new Genre();
+                    genre.setId(resultSetGenre.getInt(1));
+                    genre.setName(resultSetGenre.getString(2));
+                    return genre;
+                });
     }
 
     @Override
     public Genre getGenreById(int id) {
+        if (jdbcTemplate.queryForObject("select count(id) from genres where id = ?",
+                Integer.class,
+                id) == 0) {
+            throw new WrongFilmIdException("No such genre with id=" + id);
+        }
         return jdbcTemplate.queryForObject(
                 "select id, name from genres where id = ?",
-                Genre.class,
-                id);
+                (resultSetGenre, rowNumGenre) -> {
+                    Genre genre = new Genre();
+                    genre.setId(resultSetGenre.getInt(1));
+                    genre.setName(resultSetGenre.getString(2));
+                    return genre;
+                }, id);
+    }
+
+    @Override
+    public List<Mpa> getAllMpas() {
+        return jdbcTemplate.query(
+                "select id, name from ratings",
+                (resultSetGenre, rowNumGenre) -> {
+                    Mpa mpa = new Mpa();
+                    mpa.setId(resultSetGenre.getInt(1));
+                    mpa.setName(resultSetGenre.getString(2));
+                    return mpa;
+                });
+    }
+
+    @Override
+    public Mpa getMpaById(int id) {
+        if (jdbcTemplate.queryForObject("select count(id) from ratings where id = ?",
+                Integer.class,
+                id) == 0) {
+            throw new WrongFilmIdException("No such mpa with id=" + id);
+        }
+        return jdbcTemplate.queryForObject(
+                "select id, name from ratings where id = ?",
+                (resultSetMpa, rowNumMpa) -> {
+                    Mpa mpa = new Mpa();
+                    mpa.setId(resultSetMpa.getInt(1));
+                    mpa.setName(resultSetMpa.getString(2));
+                    return mpa;
+                }, id);
     }
 
     private Film mapper(ResultSet resultSet, int rowNum) throws SQLException {
         Mpa mpa = jdbcTemplate.queryForObject(
                 "select id, name from ratings where id = ?",
-                Mpa.class,
-                resultSet.getInt(6));
-        List<Genre> genres = jdbcTemplate.queryForList(
+                (resultSetMpa, rowNumMpa) -> {
+                    Mpa mpa1 = new Mpa();
+                    mpa1.setId(resultSetMpa.getInt(1));
+                    mpa1.setName(resultSetMpa.getString(2));
+                    return mpa1;
+                }, resultSet.getInt(6));
+        List<Genre> genres = jdbcTemplate.query(
                 "select id, name from genres where id in (select genre_id from film_genre where film_id = ?)",
-                Genre.class);
+                (resultSetGenre, rowNumGenre) -> {
+                    Genre genre = new Genre();
+                    genre.setId(resultSetGenre.getInt(1));
+                    genre.setName(resultSetGenre.getString(2));
+                    return genre;
+                }, resultSet.getLong(1));
+        Set<Long> likeIds = new HashSet<>(jdbcTemplate.query(
+                "select user_id from film_like where film_id = ?",
+                (resultSetLike, rowNumLike) -> resultSetLike.getLong(1),
+                resultSet.getLong(1)
+        ));
         return Film.builder()
                 .id(resultSet.getLong(1))
                 .name(resultSet.getString(2))
@@ -109,7 +190,8 @@ public class DbFilmStorage implements FilmStorage {
                 .releaseDate(resultSet.getDate(4).toLocalDate())
                 .duration(resultSet.getInt(5))
                 .mpa(mpa)
-                .genre(genres)
+                .genres(genres)
+                .likeIds(likeIds)
                 .build();
     }
 }

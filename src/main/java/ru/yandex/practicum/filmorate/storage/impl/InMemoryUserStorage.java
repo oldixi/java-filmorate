@@ -7,7 +7,7 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 import java.util.HashMap;
 import java.util.List;
 
-@Component
+//@Component
 public class InMemoryUserStorage implements UserStorage {
     private long uniqueId;
     private final HashMap<Long, User> users = new HashMap<>();

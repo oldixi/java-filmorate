@@ -8,11 +8,14 @@ import ru.yandex.practicum.filmorate.exception.WrongFilmIdException;
 import ru.yandex.practicum.filmorate.exception.WrongUserIdException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -95,17 +98,19 @@ public class FilmService {
         return null;
     }
 
-    public List<Film> getAllFilms() {
+    public List<Film> getAllFilms() throws SQLException {
         return filmStorage.getAllFilms();
     }
 
-    public List<Film> getTopFilms(long count) {
+    public List<Film> getTopFilms(long count) throws SQLException {
         if (isIncorrectId(count)) {
             throw new WrongFilmIdException("Param must be more then 0");
         }
 
-       // return filmStorage.getAllFilms().stream().sorted(Comparator.comparing(film -> -film.getLikeIds().size())).limit(count).collect(Collectors.toList());
-        return null;
+        return filmStorage.getAllFilms().stream()
+                .sorted(Comparator.comparing(film -> -film.getLikeIds().size()))
+                .limit(count)
+                .collect(Collectors.toList());
     }
 
     private boolean isNotValid(Film film) {
@@ -122,5 +127,13 @@ public class FilmService {
 
     public Genre getGenreById(int id) {
         return filmStorage.getGenreById(id);
+    }
+
+    public List<Mpa> getAllMpas() {
+        return filmStorage.getAllMpas();
+    }
+
+    public Mpa getMpaById(int id) {
+        return filmStorage.getMpaById(id);
     }
 }
