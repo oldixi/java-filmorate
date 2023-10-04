@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 public class DbFilmStorage implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
-    private final DbGenreStorage dbGenreStorage;
 
     @Override
     public Film add(Film film) {
@@ -110,64 +109,6 @@ public class DbFilmStorage implements FilmStorage {
         return jdbcTemplate.queryForObject("select count(id) from films where id = ?",
                 Integer.class,
                 filmId) != 0;
-    }
-
-    @Override
-    public List<Genre> getAllGenres() {
-        return jdbcTemplate.query(
-                "select id, name from genres",
-                (resultSetGenre, rowNumGenre) -> {
-                    Genre genre = new Genre();
-                    genre.setId(resultSetGenre.getInt(1));
-                    genre.setName(resultSetGenre.getString(2));
-                    return genre;
-                });
-    }
-
-    @Override
-    public Genre getGenreById(int id) {
-        if (jdbcTemplate.queryForObject("select count(id) from genres where id = ?",
-                Integer.class,
-                id) == 0) {
-            throw new WrongFilmIdException("No such genre with id=" + id);
-        }
-        return jdbcTemplate.queryForObject(
-                "select id, name from genres where id = ?",
-                (resultSetGenre, rowNumGenre) -> {
-                    Genre genre = new Genre();
-                    genre.setId(resultSetGenre.getInt(1));
-                    genre.setName(resultSetGenre.getString(2));
-                    return genre;
-                }, id);
-    }
-
-    @Override
-    public List<Mpa> getAllMpas() {
-        return jdbcTemplate.query(
-                "select id, name from ratings",
-                (resultSetGenre, rowNumGenre) -> {
-                    Mpa mpa = new Mpa();
-                    mpa.setId(resultSetGenre.getInt(1));
-                    mpa.setName(resultSetGenre.getString(2));
-                    return mpa;
-                });
-    }
-
-    @Override
-    public Mpa getMpaById(int id) {
-        if (jdbcTemplate.queryForObject("select count(id) from ratings where id = ?",
-                Integer.class,
-                id) == 0) {
-            throw new WrongFilmIdException("No such mpa with id=" + id);
-        }
-        return jdbcTemplate.queryForObject(
-                "select id, name from ratings where id = ?",
-                (resultSetMpa, rowNumMpa) -> {
-                    Mpa mpa = new Mpa();
-                    mpa.setId(resultSetMpa.getInt(1));
-                    mpa.setName(resultSetMpa.getString(2));
-                    return mpa;
-                }, id);
     }
 
     private Film mapper(ResultSet resultSet, int rowNum) throws SQLException {

@@ -7,8 +7,6 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.exception.WrongFilmIdException;
 import ru.yandex.practicum.filmorate.exception.WrongUserIdException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
 
@@ -121,21 +119,5 @@ public class FilmService {
 
     private boolean isIncorrectId(long id) {
         return id <= 0;
-    }
-
-    public List<Genre> getAllGenres() {
-        return filmStorage.getAllGenres();
-    }
-
-    public Genre getGenreById(int id) {
-        return filmStorage.getGenreById(id);
-    }
-
-    public List<Mpa> getAllMpas() {
-        return filmStorage.getAllMpas();
-    }
-
-    public Mpa getMpaById(int id) {
-        return filmStorage.getMpaById(id);
     }
 }
