@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 public class DbFilmStorage implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
+    private final DbGenreStorage dbGenreStorage;
 
     @Override
     public Film add(Film film) {

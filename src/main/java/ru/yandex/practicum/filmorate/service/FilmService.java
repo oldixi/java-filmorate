@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.GenreStorage;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -24,6 +25,7 @@ public class FilmService {
     //Стас, пришлось криво называть константу - паттерн проверки кодстайла на гите не содержит '_'. В поддержку уже написал
     private static final LocalDate EARLIESTFILMRELEASE = LocalDate.of(1895, 12, 5);
     private final FilmStorage filmStorage;
+    private final GenreStorage genreStorage;
 
     public Film addFilm(Film film) {
         if (isNotValid(film)) {
