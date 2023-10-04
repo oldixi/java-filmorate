@@ -40,10 +40,6 @@ public class UserService {
             throw new ValidationException("Can't update user. Check your data.");
         }
 
-        if (!userStorage.isPresent(user.getId())) {
-            throw new WrongUserIdException("Can't find user to update.");
-        }
-
         return userStorage.update(user);
     }
 
@@ -94,20 +90,12 @@ public class UserService {
             throw new WrongUserIdException("Param must be more then 0");
         }
 
-        if (!userStorage.isPresent(userId)) {
-            throw new WrongUserIdException("User with such id doesn't exist.");
-        }
-
         return userStorage.getById(userId);
     }
 
     public List<User> getFriends(long userId) {
         if (isIncorrectId(userId)) {
             throw new WrongUserIdException("Param must be more then 0");
-        }
-
-        if (!userStorage.isPresent(userId)) {
-            throw new WrongUserIdException("User with such id doesn't exist.");
         }
 
         return userStorage.getById(userId).getFriends().stream()

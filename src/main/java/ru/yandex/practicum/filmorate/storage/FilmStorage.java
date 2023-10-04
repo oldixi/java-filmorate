@@ -12,10 +12,8 @@ public interface FilmStorage {
 
     Film delete(Film film);
 
-    Film getById(Long filmId) throws SQLException;
+    Film getById(Long filmId);
 
-    List<Film> getAllFilms() throws SQLException;
-
-    boolean isPresent(Long filmId);
+    List<Film> getAllFilms();
 
 }

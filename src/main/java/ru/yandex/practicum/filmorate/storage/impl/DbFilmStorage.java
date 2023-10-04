@@ -1,6 +1,8 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -42,19 +44,21 @@ public class DbFilmStorage implements FilmStorage {
         }, keyHolder);
         film.setId(Objects.requireNonNull(keyHolder.getKey()).longValue());
 
-        List<Genre> filmGenres = film.getGenres();
-        if (filmGenres != null) {
-            filmGenres.forEach(genre -> jdbcTemplate.update(
-                    "insert into film_genre (film_id, genre_id) values (?, ?)",
-                    keyHolder.getKey().longValue(),
-                    genre.getId()));
+        if (film.getGenres() != null) {
+            film.setGenres(film.getGenres().stream().distinct().collect(Collectors.toList()));
+            genreUpdate(film);
         }
+
+        if (film.getLikeIds() != null) {
+            likeUpdate(film);
+        }
+
         return film;
     }
 
     @Override
     public Film update(Film film) {
-        jdbcTemplate.update("update films set name = ?, description = ?, release_date = ?, duration = ?, rating = ?" +
+        int response = jdbcTemplate.update("update films set name = ?, description = ?, release_date = ?, duration = ?, rating = ?" +
                         "where id = ?",
                 film.getName(),
                 film.getDescription(),
@@ -62,22 +66,22 @@ public class DbFilmStorage implements FilmStorage {
                 film.getDuration(),
                 film.getMpa().getId(),
                 film.getId());
+
+        if (response == 0) {
+            throw new WrongFilmIdException("No such film in DB with id = " + film.getId() + ". Update failed");
+        }
+
         jdbcTemplate.update("delete from film_genre where film_id = ?", film.getId());
-        List<Genre> filmGenres = film.getGenres();
-        if (filmGenres != null) {
-            filmGenres.stream().distinct().forEach(genre -> jdbcTemplate.update(
-                    "insert into film_genre (film_id, genre_id) values (?, ?)",
-                    film.getId(),
-                    genre.getId()));
-            film.setGenres(filmGenres.stream().distinct().collect(Collectors.toList()));
+
+        if (film.getGenres() != null) {
+            film.setGenres(film.getGenres().stream().distinct().collect(Collectors.toList()));
+            genreUpdate(film);
         }
-        Set<Long> likeIds = film.getLikeIds();
-        if (likeIds != null) {
-            likeIds.forEach(userId -> jdbcTemplate.update(
-                    "insert into film_like (film_id, user_id) values (?, ?)",
-                    film.getId(),
-                    userId));
+
+        if (film.getLikeIds() != null) {
+            likeUpdate(film);
         }
+
         return film;
     }
 
@@ -88,12 +92,13 @@ public class DbFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Film getById(Long filmId) throws SQLException {
-        if (!isPresent(filmId)) {
-            throw new WrongFilmIdException("No film with such id=" + filmId);
-        }
+    public Film getById(Long filmId) {
         String sqlQuery = "select id, name, description, release_date, duration, rating from films where id=?";
-        return jdbcTemplate.queryForObject(sqlQuery, this::mapper, filmId);
+        try {
+            return jdbcTemplate.queryForObject(sqlQuery, this::mapper, filmId);
+        } catch (EmptyResultDataAccessException e) {
+            throw new WrongFilmIdException("There is no film in DB with id = " + filmId);
+        }
     }
 
     @Override
@@ -104,44 +109,82 @@ public class DbFilmStorage implements FilmStorage {
         );
     }
 
-    @Override
-    public boolean isPresent(Long filmId) {
-        return jdbcTemplate.queryForObject("select count(id) from films where id = ?",
-                Integer.class,
-                filmId) != 0;
+    private Film mapper(ResultSet resultSet, int rowNum) {
+        try {
+            Mpa mpa = jdbcTemplate.queryForObject(
+                    "select id, name from ratings where id = ?",
+                    (resultSetMpa, rowNumMpa) -> {
+                        Mpa mpa1 = new Mpa();
+                        mpa1.setId(resultSetMpa.getInt("ratings.id"));
+                        mpa1.setName(resultSetMpa.getString("ratings.name"));
+                        return mpa1;
+                    }, resultSet.getInt(6));
+
+            List<Genre> genres = jdbcTemplate.query(
+                    "select id, name from genres where id in (select genre_id from film_genre where film_id = ?)",
+                    (resultSetGenre, rowNumGenre) -> {
+                        Genre genre = new Genre();
+                        genre.setId(resultSetGenre.getInt("genres.id"));
+                        genre.setName(resultSetGenre.getString("genres.name"));
+                        return genre;
+                    }, resultSet.getLong(1));
+
+            Set<Long> likeIds = new HashSet<>(jdbcTemplate.query(
+                    "select user_id from film_like where film_id = ?",
+                    (resultSetLike, rowNumLike) -> resultSetLike.getLong("film_like.user_id"),
+                    resultSet.getLong("films.id")
+            ));
+
+            return Film.builder()
+                    .id(resultSet.getLong("films.id"))
+                    .name(resultSet.getString("films.name"))
+                    .description(resultSet.getString("films.description"))
+                    .releaseDate(resultSet.getDate("films.release_date").toLocalDate())
+                    .duration(resultSet.getInt("films.duration"))
+                    .mpa(mpa)
+                    .genres(genres)
+                    .likeIds(likeIds)
+                    .build();
+        } catch (SQLException e) {
+            throw new WrongFilmIdException("Can't unwrap film from DB response");
+        }
     }
 
-    private Film mapper(ResultSet resultSet, int rowNum) throws SQLException {
-        Mpa mpa = jdbcTemplate.queryForObject(
-                "select id, name from ratings where id = ?",
-                (resultSetMpa, rowNumMpa) -> {
-                    Mpa mpa1 = new Mpa();
-                    mpa1.setId(resultSetMpa.getInt(1));
-                    mpa1.setName(resultSetMpa.getString(2));
-                    return mpa1;
-                }, resultSet.getInt(6));
-        List<Genre> genres = jdbcTemplate.query(
-                "select id, name from genres where id in (select genre_id from film_genre where film_id = ?)",
-                (resultSetGenre, rowNumGenre) -> {
-                    Genre genre = new Genre();
-                    genre.setId(resultSetGenre.getInt(1));
-                    genre.setName(resultSetGenre.getString(2));
-                    return genre;
-                }, resultSet.getLong(1));
-        Set<Long> likeIds = new HashSet<>(jdbcTemplate.query(
-                "select user_id from film_like where film_id = ?",
-                (resultSetLike, rowNumLike) -> resultSetLike.getLong(1),
-                resultSet.getLong(1)
-        ));
-        return Film.builder()
-                .id(resultSet.getLong(1))
-                .name(resultSet.getString(2))
-                .description(resultSet.getString(3))
-                .releaseDate(resultSet.getDate(4).toLocalDate())
-                .duration(resultSet.getInt(5))
-                .mpa(mpa)
-                .genres(genres)
-                .likeIds(likeIds)
-                .build();
+    private void genreUpdate(Film film) {
+        jdbcTemplate.batchUpdate("insert into film_genre (film_id, genre_id) values (?, ?)",
+                new BatchPreparedStatementSetter() {
+                    @Override
+                    public void setValues(PreparedStatement ps, int i) throws SQLException {
+                        int genreId = film.getGenres().get(i).getId();
+                        ps.setLong(1, film.getId());
+                        ps.setInt(2, genreId);
+                    }
+
+                    @Override
+                    public int getBatchSize() {
+                        return film.getGenres().size();
+                    }
+                }
+        );
     }
+
+    private void likeUpdate(Film film) {
+        jdbcTemplate.batchUpdate(
+                "insert into film_like (film_id, user_id) values (?, ?)",
+                new BatchPreparedStatementSetter() {
+                    @Override
+                    public void setValues(PreparedStatement ps, int i) throws SQLException {
+                        long likeId = List.copyOf(film.getLikeIds()).get(i);
+                        ps.setLong(1, film.getId());
+                        ps.setLong(2, likeId);
+                    }
+
+                    @Override
+                    public int getBatchSize() {
+                        return film.getLikeIds().size();
+                    }
+                }
+        );
+    }
+
 }

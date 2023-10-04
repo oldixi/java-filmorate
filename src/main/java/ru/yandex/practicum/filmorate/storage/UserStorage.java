@@ -15,5 +15,4 @@ public interface UserStorage {
 
     List<User> getAll();
 
-    boolean isPresent(Long userId);
 }

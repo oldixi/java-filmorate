@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.WrongFilmIdException;
@@ -21,26 +22,25 @@ public class DbMpaStorage implements MpaStorage {
                 "select id, name from ratings",
                 (resultSetGenre, rowNumGenre) -> {
                     Mpa mpa = new Mpa();
-                    mpa.setId(resultSetGenre.getInt(1));
-                    mpa.setName(resultSetGenre.getString(2));
+                    mpa.setId(resultSetGenre.getInt("ratings.id"));
+                    mpa.setName(resultSetGenre.getString("ratings.name"));
                     return mpa;
                 });
     }
 
     @Override
     public Mpa getById(int id) {
-        if (jdbcTemplate.queryForObject("select count(id) from ratings where id = ?",
-                Integer.class,
-                id) == 0) {
-            throw new WrongFilmIdException("No such mpa with id=" + id);
+        try {
+            return jdbcTemplate.queryForObject(
+                    "select id, name from ratings where id = ?",
+                    (resultSetMpa, rowNumMpa) -> {
+                        Mpa mpa = new Mpa();
+                        mpa.setId(resultSetMpa.getInt("ratings.id"));
+                        mpa.setName(resultSetMpa.getString("ratings.name"));
+                        return mpa;
+                    }, id);
+        } catch (EmptyResultDataAccessException e) {
+            throw new WrongFilmIdException("No such Mpa with id = " + id + " in DB was found");
         }
-        return jdbcTemplate.queryForObject(
-                "select id, name from ratings where id = ?",
-                (resultSetMpa, rowNumMpa) -> {
-                    Mpa mpa = new Mpa();
-                    mpa.setId(resultSetMpa.getInt(1));
-                    mpa.setName(resultSetMpa.getString(2));
-                    return mpa;
-                }, id);
     }
 }

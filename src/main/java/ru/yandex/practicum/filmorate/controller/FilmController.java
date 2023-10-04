@@ -31,14 +31,14 @@ public class FilmController {
         return filmService.getAllFilms();
     }
 
-    @GetMapping("/films/{id}")
+    @GetMapping("/{id}")
     public Film getFilmById(@PathVariable long id) {
         log.info("Requested film {}", id);
         return filmService.getFilmById(id);
     }
 
     @GetMapping("/popular")
-    public List<Film> getPopularFilms(@RequestParam(defaultValue = "10") long count) throws SQLException {
+    public List<Film> getPopularFilms(@RequestParam(defaultValue = "10") long count) {
         log.info("Requested most popular {} films", count);
         return filmService.getTopFilms(count);
     }
@@ -50,7 +50,7 @@ public class FilmController {
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public Film addLike(@PathVariable long id, @PathVariable long userId) throws SQLException {
+    public Film addLike(@PathVariable long id, @PathVariable long userId) {
         log.info("Requested add like to film {} from user {}", id, userId);
         filmService.addLike(userId, id);
         return filmService.getFilmById(id);
@@ -63,7 +63,7 @@ public class FilmController {
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public void deleteLike(@PathVariable long id, @PathVariable long userId) throws SQLException {
+    public void deleteLike(@PathVariable long id, @PathVariable long userId) {
         log.info("Requested delete like to film {} from user {}", id, userId);
         filmService.deleteLike(userId, id);
     }

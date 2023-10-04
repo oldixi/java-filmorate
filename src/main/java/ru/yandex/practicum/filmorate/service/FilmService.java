@@ -8,7 +8,6 @@ import ru.yandex.practicum.filmorate.exception.WrongFilmIdException;
 import ru.yandex.practicum.filmorate.exception.WrongUserIdException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.GenreStorage;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -23,7 +22,6 @@ public class FilmService {
     //Стас, пришлось криво называть константу - паттерн проверки кодстайла на гите не содержит '_'. В поддержку уже написал
     private static final LocalDate EARLIESTFILMRELEASE = LocalDate.of(1895, 12, 5);
     private final FilmStorage filmStorage;
-    private final GenreStorage genreStorage;
 
     public Film addFilm(Film film) {
         if (isNotValid(film)) {
@@ -40,42 +38,30 @@ public class FilmService {
             throw new ValidationException("Film validation has been failed");
         }
 
-        if (!filmStorage.isPresent(film.getId())) {
-            throw new WrongFilmIdException("Can't find the film to update");
-        }
-
         log.info("Film updated {}", film);
         return filmStorage.update(film);
     }
 
-    public void addLike(long userId, long filmId) throws SQLException {
+    public void addLike(long userId, long filmId) {
         if (isIncorrectId(filmId)) {
             throw new WrongFilmIdException("Param must be more then 0");
         }
 
         if (isIncorrectId(userId)) {
             throw new WrongUserIdException("Param must be more then 0");
-        }
-
-        if (!filmStorage.isPresent(filmId)) {
-            throw new WrongFilmIdException("There is no film with such id.");
         }
 
         log.info("Like added to film {} from user {}", filmId, userId);
         filmStorage.update(filmStorage.getById(filmId).addLike(userId));
     }
 
-    public void deleteLike(long userId, long filmId) throws SQLException {
+    public void deleteLike(long userId, long filmId) {
         if (isIncorrectId(userId)) {
             throw new WrongUserIdException("Param must be more then 0");
         }
 
         if (isIncorrectId(filmId)) {
             throw new WrongFilmIdException("Param must be more then 0");
-        }
-
-        if (!filmStorage.isPresent(filmId)) {
-            throw new WrongFilmIdException("There is no film with such id.");
         }
 
         filmStorage.update(filmStorage.getById(filmId).deleteLike(userId));
@@ -86,23 +72,14 @@ public class FilmService {
             throw new WrongFilmIdException("Param must be more then 0");
         }
 
-        if (!filmStorage.isPresent(filmId)) {
-            throw new WrongFilmIdException("Film with such id doesn't exist");
-        }
-
-        try {
-            return filmStorage.getById(filmId);
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-        return null;
+        return filmStorage.getById(filmId);
     }
 
     public List<Film> getAllFilms() throws SQLException {
         return filmStorage.getAllFilms();
     }
 
-    public List<Film> getTopFilms(long count) throws SQLException {
+    public List<Film> getTopFilms(long count) {
         if (isIncorrectId(count)) {
             throw new WrongFilmIdException("Param must be more then 0");
         }

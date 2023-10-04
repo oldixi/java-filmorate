@@ -1,11 +1,13 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.WrongFilmIdException;
+import ru.yandex.practicum.filmorate.exception.WrongUserIdException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -50,13 +52,16 @@ public class DbUserStorage implements UserStorage {
 
     @Override
     public User update(User user) {
-        jdbcTemplate.update("update users set name = ?, login = ?, email = ?, birthday = ?" +
+        int userFound = jdbcTemplate.update("update users set name = ?, login = ?, email = ?, birthday = ?" +
                         "where id = ?",
                 user.getName(),
                 user.getLogin(),
                 user.getEmail(),
                 java.sql.Date.valueOf(user.getBirthday()),
                 user.getId());
+        if (userFound == 0) {
+            throw new WrongUserIdException("No user with id = " + user.getId() + " in DB was found.");
+        }
         jdbcTemplate.update("delete from friends where user_id = ?", user.getId());
         Set<Long> friends = user.getFriends();
         if (friends != null) {
@@ -76,11 +81,12 @@ public class DbUserStorage implements UserStorage {
 
     @Override
     public User getById(Long userID) {
-        if (!isPresent(userID)) {
-            throw new WrongFilmIdException("No user with such id=" + userID);
-        }
         String sqlQuery = "select id, name, login, email, birthday from users where id=?";
-        return jdbcTemplate.queryForObject(sqlQuery, this::mapper, userID);
+        try {
+            return jdbcTemplate.queryForObject(sqlQuery, this::mapper, userID);
+        } catch (EmptyResultDataAccessException e) {
+            throw new WrongUserIdException("No user with id = " + userID + " in DB was found.");
+        }
     }
 
     @Override
@@ -89,13 +95,6 @@ public class DbUserStorage implements UserStorage {
                 "select id, name, login, email, birthday from users",
                 this::mapper
         );
-    }
-
-    @Override
-    public boolean isPresent(Long userId) {
-        return jdbcTemplate.queryForObject("select count(id) from users where id = ?",
-                Integer.class,
-                userId) != 0;
     }
 
     private User mapper(ResultSet resultSet, int rowNum) throws SQLException {
@@ -107,11 +106,11 @@ public class DbUserStorage implements UserStorage {
         ));
 
         return User.builder()
-                .id(resultSet.getLong(1))
-                .name(resultSet.getString(2))
-                .login(resultSet.getString(3))
-                .email(resultSet.getString(4))
-                .birthday(resultSet.getDate(5).toLocalDate())
+                .id(resultSet.getLong("users.id"))
+                .name(resultSet.getString("users.name"))
+                .login(resultSet.getString("users.login"))
+                .email(resultSet.getString("users.email"))
+                .birthday(resultSet.getDate("users.birthday").toLocalDate())
                 .friends(friendIds)
                 .build();
     }
