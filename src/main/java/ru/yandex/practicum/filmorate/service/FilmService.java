@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.exception.WrongUserIdException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
@@ -37,28 +38,21 @@ public class FilmService {
             throw new ValidationException("Film validation has been failed");
         }
 
-        if (!filmStorage.isPresent(film.getId())) {
-            throw new WrongFilmIdException("Can't find the film to update");
-        }
-
         log.info("Film updated {}", film);
         return filmStorage.update(film);
     }
 
     public void addLike(long userId, long filmId) {
-        if (isIncorrectId(userId)) {
-            throw new WrongUserIdException("Param must be more then 0");
-        }
-
         if (isIncorrectId(filmId)) {
             throw new WrongFilmIdException("Param must be more then 0");
         }
 
-        if (!filmStorage.isPresent(filmId)) {
-            throw new WrongFilmIdException("There is no film with such id.");
+        if (isIncorrectId(userId)) {
+            throw new WrongUserIdException("Param must be more then 0");
         }
 
-        filmStorage.getById(filmId).addLike(userId);
+        log.info("Like added to film {} from user {}", filmId, userId);
+        filmStorage.update(filmStorage.getById(filmId).addLike(userId));
     }
 
     public void deleteLike(long userId, long filmId) {
@@ -70,11 +64,7 @@ public class FilmService {
             throw new WrongFilmIdException("Param must be more then 0");
         }
 
-        if (!filmStorage.isPresent(filmId)) {
-            throw new WrongFilmIdException("There is no film with such id.");
-        }
-
-        filmStorage.getById(filmId).deleteLike(userId);
+        filmStorage.update(filmStorage.getById(filmId).deleteLike(userId));
     }
 
     public Film getFilmById(long filmId) {
@@ -82,14 +72,10 @@ public class FilmService {
             throw new WrongFilmIdException("Param must be more then 0");
         }
 
-        if (!filmStorage.isPresent(filmId)) {
-            throw new WrongFilmIdException("Film with such id doesn't exist");
-        }
-
         return filmStorage.getById(filmId);
     }
 
-    public List<Film> getAllFilms() {
+    public List<Film> getAllFilms() throws SQLException {
         return filmStorage.getAllFilms();
     }
 
@@ -98,7 +84,10 @@ public class FilmService {
             throw new WrongFilmIdException("Param must be more then 0");
         }
 
-        return filmStorage.getAllFilms().stream().sorted(Comparator.comparing(film -> -film.getLikeIds().size())).limit(count).collect(Collectors.toList());
+        return filmStorage.getAllFilms().stream()
+                .sorted(Comparator.comparing(film -> -film.getLikeIds().size()))
+                .limit(count)
+                .collect(Collectors.toList());
     }
 
     private boolean isNotValid(Film film) {
@@ -108,5 +97,4 @@ public class FilmService {
     private boolean isIncorrectId(long id) {
         return id <= 0;
     }
-
 }

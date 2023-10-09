@@ -15,6 +15,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
+import java.sql.SQLException;
 import java.util.List;
 
 @Slf4j
@@ -24,8 +25,8 @@ import java.util.List;
 public class FilmController {
     private final FilmService filmService;
 
-    @GetMapping
-    public List<Film> getAllFilms() {
+    @GetMapping("")
+    public List<Film> getAllFilms() throws SQLException {
         log.info("Get list of films.");
         return filmService.getAllFilms();
     }
@@ -42,7 +43,7 @@ public class FilmController {
         return filmService.getTopFilms(count);
     }
 
-    @PostMapping
+    @PostMapping("")
     public Film post(@Valid @RequestBody Film film) {
         log.info("Requested add film {}", film);
         return filmService.addFilm(film);
@@ -55,7 +56,7 @@ public class FilmController {
         return filmService.getFilmById(id);
     }
 
-    @PutMapping
+    @PutMapping("")
     public Film update(@Valid @RequestBody Film film) {
         log.info("Requested update film {}", film);
         return filmService.update(film);

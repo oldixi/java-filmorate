@@ -40,10 +40,6 @@ public class UserService {
             throw new ValidationException("Can't update user. Check your data.");
         }
 
-        if (!userStorage.isPresent(user.getId())) {
-            throw new WrongUserIdException("Can't find user to update.");
-        }
-
         return userStorage.update(user);
     }
 
@@ -61,18 +57,7 @@ public class UserService {
             throw new WrongUserIdException("Param must be more then 0");
         }
 
-//        Set<Long> incomingRequests = userStorage.getById(userId).getIncomingFriendRequest();
-//
-//        if (incomingRequests.contains(friendId)) {
-//            userStorage.getById(userId).acceptFriendship(friendId);
-//            userStorage.getById(friendId).getFriendConformation(userId);
-//        } else {
-//            userStorage.getById(userId).sendFriendRequest(friendId);
-//            userStorage.getById(friendId).getFriendRequest(userId);
-//        }
-
-        userStorage.getById(userId).addFriend(friendId);
-        userStorage.getById(friendId).addFriend(userId);
+        userStorage.update(userStorage.getById(userId).addFriend(friendId));
     }
 
     public void deleteFriend(long userId, long friendId) {
@@ -80,8 +65,7 @@ public class UserService {
             throw new WrongUserIdException("Param must be more then 0");
         }
 
-        userStorage.getById(userId).removeFriend(friendId);
-        userStorage.getById(friendId).removeFriend(userId);
+        userStorage.update(userStorage.getById(userId).removeFriend(friendId));
     }
 
     public List<User> findCommonFriends(long userId, long otherId) {
@@ -106,20 +90,12 @@ public class UserService {
             throw new WrongUserIdException("Param must be more then 0");
         }
 
-        if (!userStorage.isPresent(userId)) {
-            throw new WrongUserIdException("User with such id doesn't exist.");
-        }
-
         return userStorage.getById(userId);
     }
 
     public List<User> getFriends(long userId) {
         if (isIncorrectId(userId)) {
             throw new WrongUserIdException("Param must be more then 0");
-        }
-
-        if (!userStorage.isPresent(userId)) {
-            throw new WrongUserIdException("User with such id doesn't exist.");
         }
 
         return userStorage.getById(userId).getFriends().stream()

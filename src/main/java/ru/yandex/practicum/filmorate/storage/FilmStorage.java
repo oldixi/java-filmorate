@@ -15,5 +15,4 @@ public interface FilmStorage {
 
     List<Film> getAllFilms();
 
-    boolean isPresent(Long filmId);
 }
