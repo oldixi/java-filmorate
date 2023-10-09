@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.exception.WrongFilmIdException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.storage.EventStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.sql.PreparedStatement;
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
 public class DbFilmStorage implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
+    private final EventStorage eventStorage;
 
     @Override
     public Film add(Film film) {
@@ -49,10 +51,7 @@ public class DbFilmStorage implements FilmStorage {
             genreUpdate(film);
         }
 
-        if (film.getLikeIds() != null) {
-            likeUpdate(film);
-        }
-
+        eventStorage.addFilm(film.getId(), film.getName());
         return film;
     }
 
@@ -78,16 +77,14 @@ public class DbFilmStorage implements FilmStorage {
             genreUpdate(film);
         }
 
-        if (film.getLikeIds() != null) {
-            likeUpdate(film);
-        }
-
+        eventStorage.updateFilm(film.getId(), film.getName());
         return film;
     }
 
     @Override
     public Film delete(Film film) {
         jdbcTemplate.update("delete from films where id = ? cascade", film.getId());
+        eventStorage.deleteFilm(film.getId(), film.getName());
         return film;
     }
 
@@ -107,6 +104,15 @@ public class DbFilmStorage implements FilmStorage {
                 "select id, name, description, release_date, duration, rating from films",
                 this::mapper
         );
+    }
+
+    public List<Film> getFilmsPopularList(int count) {
+        String sql = "select f.* from films f left join " +
+                "(select ll.film_id, count(ll.user_id) cnt from likes_link ll group by ll.film_id) l " +
+                "on f.id = l.film_id " +
+                "order by l.cnt desc " +
+                "limit ?";
+        return jdbcTemplate.query(sql, this::mapper, count);
     }
 
     private Film mapper(ResultSet resultSet, int rowNum) {
@@ -166,25 +172,7 @@ public class DbFilmStorage implements FilmStorage {
                     }
                 }
         );
-    }
-
-    private void likeUpdate(Film film) {
-        jdbcTemplate.batchUpdate(
-                "insert into film_like (film_id, user_id) values (?, ?)",
-                new BatchPreparedStatementSetter() {
-                    @Override
-                    public void setValues(PreparedStatement ps, int i) throws SQLException {
-                        long likeId = List.copyOf(film.getLikeIds()).get(i);
-                        ps.setLong(1, film.getId());
-                        ps.setLong(2, likeId);
-                    }
-
-                    @Override
-                    public int getBatchSize() {
-                        return film.getLikeIds().size();
-                    }
-                }
-        );
+        eventStorage.updateFilm(film.getId(), film.getName());
     }
 
 }

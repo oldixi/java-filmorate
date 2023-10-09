@@ -67,7 +67,13 @@ public class UserController {
 
     @DeleteMapping("/{id}/friends/{friendId}")
     public void deleteFriend(@PathVariable long id, @PathVariable long friendId) {
-        log.info("Requested delete friend with id {} from user {}", friendId, id);
+        log.info("Delete friend with id {} from user {}", friendId, id);
         userService.deleteFriend(id, friendId);
+    }
+
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public void acceptFriendRequest(@PathVariable long id, @PathVariable long friendId) {
+        log.info("Accept requested friend with id {} from user {}", friendId, id);
+        userService.updateFriendRequest(id, friendId);
     }
 }

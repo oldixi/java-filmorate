@@ -68,16 +68,20 @@ public class UserService {
         userStorage.update(userStorage.getById(userId).removeFriend(friendId));
     }
 
+    public void updateFriendRequest(long userId, long friendId) {
+        if (isIncorrectId(userId) || isIncorrectId(friendId)) {
+            throw new WrongUserIdException("Param must be more then 0");
+        }
+
+        userStorage.acceptFriendRequest(getById(userId), getById(friendId));
+    }
+
     public List<User> findCommonFriends(long userId, long otherId) {
         if (isIncorrectId(userId) || isIncorrectId(otherId)) {
             throw new WrongUserIdException("Param must be more then 0");
         }
 
-        Set<Long> friendIds = userStorage.getById(otherId).getFriends();
-        return userStorage.getById(userId).getFriends().stream()
-                .filter(friendIds::contains)
-                .map(userStorage::getById)
-                .collect(Collectors.toList());
+        return userStorage.getCommonFriendsByUsersIds(userId, otherId);
     }
 
     private boolean isNotValid(User user) {

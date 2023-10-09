@@ -8,6 +8,7 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.WrongUserIdException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.EventStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.sql.PreparedStatement;
@@ -21,8 +22,8 @@ import java.util.Set;
 @Repository
 @RequiredArgsConstructor
 public class DbUserStorage implements UserStorage {
-
     private final JdbcTemplate jdbcTemplate;
+    private final EventStorage eventStorage;
 
     @Override
     public User add(User user) {
@@ -42,10 +43,11 @@ public class DbUserStorage implements UserStorage {
         Set<Long> friends = user.getFriends();
         if (friends != null) {
             friends.forEach(friendId -> jdbcTemplate.update(
-                    "insert into friends (user_id, friend_id) values (?, ?)",
+                    "insert into friends (user_id, friend_id, status) values (?, ?, false)",
                     keyHolder.getKey().longValue(),
                     friendId));
         }
+        eventStorage.addUser(user.getId(), user.getLogin());
         return user;
     }
 
@@ -65,16 +67,18 @@ public class DbUserStorage implements UserStorage {
         Set<Long> friends = user.getFriends();
         if (friends != null) {
             friends.forEach(friendId -> jdbcTemplate.update(
-                    "insert into friends (user_id, friend_id) values (?, ?)",
+                    "insert into friends (user_id, friend_id, status) values (?, ?, false)",
                     user.getId(),
                     friendId));
         }
+        eventStorage.updateUser(user.getId(), user.getLogin());
         return user;
     }
 
     @Override
     public User delete(User user) {
         jdbcTemplate.update("delete from users where id = ? cascade", user.getId());
+        eventStorage.deleteUser(user.getId(), user.getLogin());
         return user;
     }
 
@@ -96,8 +100,24 @@ public class DbUserStorage implements UserStorage {
         );
     }
 
-    private User mapper(ResultSet resultSet, int rowNum) throws SQLException {
+    @Override
+    public List<User> getCommonFriendsByUsersIds(long userId, long otherId) {
+        String sql = "select u.* " +
+                "from friends fl1 join friends fl2 on fl1.user_id = fl2.user_id " +
+                "join users u on fl2.user_id = u.id " +
+                "where fl1.friend_id = ? and fl2.friend_id = ? " +
+                "and fl1.status = true and fl2.status = true";
+        return jdbcTemplate.query(sql, this::mapper, userId, otherId);
+    }
 
+    @Override
+    public void acceptFriendRequest(User user, User friend) {
+        String sql = "update friends set status_code = true where user_id = ? and friend_id = ?";
+        eventStorage.acceptFriendRequest(friend.getId(), friend.getLogin(), user.getId(), user.getLogin());
+        jdbcTemplate.update(sql, user.getId(), friend.getId());
+    }
+
+    private User mapper(ResultSet resultSet, int rowNum) throws SQLException {
         Set<Long> friendIds = new HashSet<>(jdbcTemplate.query(
                 "select friend_id from friends where user_id = ?",
                 (resultSetLike, rowNumLike) -> resultSetLike.getLong(1),
