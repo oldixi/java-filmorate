@@ -111,7 +111,7 @@ public class UserService {
         }
         for (User anotherUser : userStorage.getAll()) {
             int filmSize = getCommonFilmLikes(user, anotherUser).size();
-            if (filmSize > maxSize && !user.equals(anotherUser)) {
+            if (filmSize >= maxSize && !user.equals(anotherUser)) {
                 maxSize = filmSize;
                 commonUsers.add(user);
             }
