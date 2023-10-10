@@ -43,7 +43,13 @@ public class FilmController {
         return filmService.getTopFilms(count);
     }
 
-    @PostMapping("")
+    @GetMapping("/director/{directorId}")
+    public List<Film> getFilmsByDirector(@PathVariable int directorId, @RequestParam String sortBy) {
+        log.info("Requested films by director id {}, sort by {}", directorId, sortBy);
+        return filmService.getTopByDirector(directorId, sortBy);
+    }
+
+    @PostMapping
     public Film post(@Valid @RequestBody Film film) {
         log.info("Requested add film {}", film);
         return filmService.addFilm(film);
@@ -67,5 +73,4 @@ public class FilmController {
         log.info("Requested delete like to film {} from user {}", id, userId);
         filmService.deleteLike(userId, id);
     }
-
 }
