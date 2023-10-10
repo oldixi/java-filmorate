@@ -75,13 +75,14 @@ public class DbDirectorStorage implements DirectorStorage {
     public List<Director> getByFilmId(long filmId) {
         return jdbcTemplate.query(
                 "SELECT * FROM directors WHERE id IN (SELECT director_id FROM film_director WHERE film_id = ?)",
-                this::mapper,
+                (rs, RowNum) -> mapper(rs),
                 filmId);
     }
 
-    private Director mapper(ResultSet resultSet, int rowNum) throws SQLException {
+    private Director mapper(ResultSet resultSet) throws SQLException {
         try {
-            return new Director(resultSet.getInt("id"), resultSet.getString("name"));
+            Director director = new Director(resultSet.getInt("id"), resultSet.getString("name"));
+            return director;
         } catch (SQLException e) {
             throw new WrongFilmIdException("Can't unwrap director from DB response");
         }

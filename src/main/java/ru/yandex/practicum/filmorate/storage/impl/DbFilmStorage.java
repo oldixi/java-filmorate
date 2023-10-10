@@ -52,7 +52,7 @@ public class DbFilmStorage implements FilmStorage {
             directorUpdate(film);
         }
 
-        return getById(film.getId());
+        return film;
     }
 
     @Override
@@ -82,7 +82,7 @@ public class DbFilmStorage implements FilmStorage {
             directorUpdate(film);
         }
 
-        return getById(film.getId());
+        return film;
     }
 
     @Override

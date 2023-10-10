@@ -31,7 +31,10 @@ public class FilmService {
         }
 
         log.info("Film added {}.", film);
-        return filmStorage.add(film);
+        Film film1 = filmStorage.add(film);
+        film1.setGenres(genreStorage.getByFilmId(film1.getId()));
+        film1.setDirectors(directorStorage.getByFilmId(film1.getId()));
+        return film1;
     }
 
     public Film update(Film film) {
