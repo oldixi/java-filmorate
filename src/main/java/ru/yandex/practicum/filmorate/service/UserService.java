@@ -3,16 +3,15 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.InvalidPathVariableException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.exception.WrongUserIdException;
-import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.FeedStorage;
+import ru.yandex.practicum.filmorate.storage.FriendStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -20,7 +19,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserService {
     private final UserStorage userStorage;
-    private final FeedStorage feedStorage;
+    private final FriendStorage friendStorage;
 
     public User create(User user) {
 
@@ -60,7 +59,7 @@ public class UserService {
             throw new WrongUserIdException("Param must be more then 0");
         }
 
-        userStorage.update(userStorage.getById(userId).addFriend(friendId));
+        friendStorage.addFriend(userId, friendId);
     }
 
     public void deleteFriend(long userId, long friendId) {
@@ -68,7 +67,7 @@ public class UserService {
             throw new WrongUserIdException("Param must be more then 0");
         }
 
-        userStorage.update(userStorage.getById(userId).removeFriend(friendId));
+        friendStorage.deleteFriend(userId, friendId);
     }
 
     public void updateFriendRequest(long userId, long friendId) {
@@ -84,25 +83,7 @@ public class UserService {
             throw new WrongUserIdException("Param must be more then 0");
         }
 
-        return userStorage.getCommonFriendsByUsersIds(userId, otherId);
-    }
-
-    public List<Feed> getEventsList(long userId, int count, String operation, String eventType) {
-        if (isIncorrectId(userId)) {
-            throw new WrongUserIdException("Param must be more then 0");
-        }
-        try {
-            Feed.Operation operationEnum = Feed.Operation.valueOf(operation);
-            Feed.EventType objectEnum = Feed.EventType.valueOf(eventType);
-            return feedStorage.getFeedList(userId, count, operationEnum, objectEnum);
-        } catch (RuntimeException re) {
-            throw new InvalidPathVariableException("Incorrect parameters");
-        }
-    }
-
-    private boolean isNotValid(User user) {
-        return user.getLogin().contains(" ")
-                || user.getBirthday().isAfter(LocalDate.now());
+        return userStorage.getCommonFriendsByUserId(userId, otherId);
     }
 
     public User getById(long userId) {
@@ -118,9 +99,14 @@ public class UserService {
             throw new WrongUserIdException("Param must be more then 0");
         }
 
-        return userStorage.getById(userId).getFriends().stream()
+        return friendStorage.getFriendsByUserId(userId).stream()
                 .map(userStorage::getById)
                 .collect(Collectors.toList());
+    }
+
+    private boolean isNotValid(User user) {
+        return user.getLogin().contains(" ")
+                || user.getBirthday().isAfter(LocalDate.now());
     }
 
     private void changeNameToLogin(User user) {

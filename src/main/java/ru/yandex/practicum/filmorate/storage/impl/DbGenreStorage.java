@@ -21,7 +21,7 @@ public class DbGenreStorage implements GenreStorage {
     @Override
     public List<Genre> getAll() {
         return jdbcTemplate.query(
-                "select id, name from genres",
+                "select * from genres",
                 this::mapper);
     }
 
@@ -29,11 +29,19 @@ public class DbGenreStorage implements GenreStorage {
     public Genre getById(int id) {
         try {
             return jdbcTemplate.queryForObject(
-                    "select id, name from genres where id = ?",
+                    "select * from genres where id = ?",
                     this::mapper, id);
         } catch (EmptyResultDataAccessException e) {
             throw new WrongFilmIdException("No such genre in DB with id = " + id + " was found.");
         }
+    }
+
+    @Override
+    public List<Genre> getByFilmId(long filmId) {
+        return jdbcTemplate.query(
+                "select * from genres where id in (select genre_id from film_genre where film_id = ?)",
+                this::mapper,
+                filmId);
     }
 
     private Genre mapper(ResultSet resultSet, int rowNum) throws SQLException {

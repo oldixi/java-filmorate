@@ -37,6 +37,13 @@ CREATE TABLE film_like (
     PRIMARY KEY (film_id, user_id)
 );
 
+CREATE TABLE film_feedback (
+    film_id int NOT NULL,
+    user_id int NOT NULL,
+    feedback varchar(500),
+    PRIMARY KEY (film_id, user_id)
+);
+
 CREATE TABLE friends (
     user_id int NOT NULL,
     friend_id int NOT NULL,
@@ -51,3 +58,6 @@ ALTER TABLE film_like ADD CONSTRAINT fk_user_id_like FOREIGN KEY(user_id) REFERE
 
 ALTER TABLE friends ADD CONSTRAINT fk_user_id FOREIGN KEY(user_id) REFERENCES users(id);
 ALTER TABLE friends ADD CONSTRAINT fk_friend_id FOREIGN KEY(friend_id) REFERENCES users(id);
+
+ALTER TABLE film_feedback ADD CONSTRAINT fk_film_fb_id FOREIGN KEY(film_id) REFERENCES films(id);
+ALTER TABLE film_feedback ADD CONSTRAINT fk_user_fb_id FOREIGN KEY(user_id) REFERENCES users(id);

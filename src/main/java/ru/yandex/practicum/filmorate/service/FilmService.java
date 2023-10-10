@@ -8,22 +8,23 @@ import ru.yandex.practicum.filmorate.exception.WrongFilmIdException;
 import ru.yandex.practicum.filmorate.exception.WrongUserIdException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.LikeStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class FilmService {
-    //Стас, пришлось криво называть константу - паттерн проверки кодстайла на гите не содержит '_'. В поддержку уже написал
-    private static final LocalDate EARLIESTFILMRELEASE = LocalDate.of(1895, 12, 5);
+    private static final LocalDate EARLIEST_FILM_RELEASE = LocalDate.of(1895, 12, 5);
     private final FilmStorage filmStorage;
-    private final UserStorage userStorage;
     private final LikeStorage likeStorage;
+    private final GenreStorage genreStorage;
 
     public Film addFilm(Film film) {
         if (isNotValid(film)) {
@@ -54,7 +55,7 @@ public class FilmService {
         }
 
         log.info("Like added to film {} from user {}", filmId, userId);
-        likeStorage.addLike(filmStorage.getById(filmId), userStorage.getById(userId));
+        likeStorage.addLike(userId, filmId);
     }
 
     public void deleteLike(long userId, long filmId) {
@@ -66,8 +67,8 @@ public class FilmService {
             throw new WrongFilmIdException("Param must be more then 0");
         }
 
-        log.info("Like deleted to film {} from user {}", filmId, userId);
-        likeStorage.deleteLike(filmStorage.getById(filmId), userStorage.getById(userId));
+        log.info("Like deleted from film {} from user {}", filmId, userId);
+        likeStorage.deleteLike(userId, filmId);
     }
 
     public Film getFilmById(long filmId) {
@@ -75,19 +76,25 @@ public class FilmService {
             throw new WrongFilmIdException("Param must be more then 0");
         }
 
-        return filmStorage.getById(filmId);
+        Film film = filmStorage.getById(filmId);
+        film.setGenres(genreStorage.getByFilmId(filmId));
+        return film;
     }
 
-    public List<Film> getAllFilms() throws SQLException {
-        return filmStorage.getAllFilms();
+    public List<Film> getAllFilms() {
+        List<Film> films = filmStorage.getAllFilms();
+        films.forEach(film -> film.setGenres(genreStorage.getByFilmId(film.getId())));
+        return films;
     }
 
-    public List<Film> getTopFilms(int count) {
+    public List<Film> getTopFilms(long count) {
         if (isIncorrectId(count)) {
             throw new WrongFilmIdException("Param must be more then 0");
         }
 
-        return filmStorage.getFilmsPopularList(count);
+        List<Film> films = filmStorage.getPopular(count);
+        films.forEach(film -> film.setGenres(genreStorage.getByFilmId(film.getId())));
+        return films;
     }
 
     private boolean isNotValid(Film film) {

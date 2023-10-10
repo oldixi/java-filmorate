@@ -101,13 +101,15 @@ public class DbFilmStorage implements FilmStorage {
         );
     }
 
-    public List<Film> getFilmsPopularList(int count) {
-        String sql = "select f.* from films f left join " +
-                "(select ll.film_id, count(ll.user_id) cnt from likes_link ll group by ll.film_id) l " +
-                "on f.id = l.film_id " +
-                "order by l.cnt desc " +
-                "limit ?";
-        return jdbcTemplate.query(sql, this::mapper, count);
+    @Override
+    public List<Film> getPopular(long count) {
+        return jdbcTemplate.query("select f.* from films f left join " +
+                        "(select fl.film_id, count(fl.user_id) cnt from film_like fl group by fl.film_id) l " +
+                        "on f.id = l.film_id " +
+                        "order by l.cnt desc " +
+                        "limit ?",
+                this::mapper,
+                count);
     }
 
     private Film mapper(ResultSet resultSet, int rowNum) {
@@ -121,21 +123,6 @@ public class DbFilmStorage implements FilmStorage {
                         return mpa1;
                     }, resultSet.getInt(6));
 
-            List<Genre> genres = jdbcTemplate.query(
-                    "select id, name from genres where id in (select genre_id from film_genre where film_id = ?)",
-                    (resultSetGenre, rowNumGenre) -> {
-                        Genre genre = new Genre();
-                        genre.setId(resultSetGenre.getInt("genres.id"));
-                        genre.setName(resultSetGenre.getString("genres.name"));
-                        return genre;
-                    }, resultSet.getLong(1));
-
-            Set<Long> likeIds = new HashSet<>(jdbcTemplate.query(
-                    "select user_id from film_like where film_id = ?",
-                    (resultSetLike, rowNumLike) -> resultSetLike.getLong("film_like.user_id"),
-                    resultSet.getLong("films.id")
-            ));
-
             return Film.builder()
                     .id(resultSet.getLong("films.id"))
                     .name(resultSet.getString("films.name"))
@@ -143,8 +130,6 @@ public class DbFilmStorage implements FilmStorage {
                     .releaseDate(resultSet.getDate("films.release_date").toLocalDate())
                     .duration(resultSet.getInt("films.duration"))
                     .mpa(mpa)
-                    .genres(genres)
-                    .likeIds(likeIds)
                     .build();
         } catch (SQLException e) {
             throw new WrongFilmIdException("Can't unwrap film from DB response");

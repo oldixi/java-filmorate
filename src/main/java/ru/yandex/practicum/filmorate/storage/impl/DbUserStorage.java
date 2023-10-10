@@ -14,14 +14,13 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 @Repository
 @RequiredArgsConstructor
 public class DbUserStorage implements UserStorage {
+
     private final JdbcTemplate jdbcTemplate;
     private final FeedStorage feedStorage;
 
@@ -40,13 +39,13 @@ public class DbUserStorage implements UserStorage {
         }, keyHolder);
         user.setId(Objects.requireNonNull(keyHolder.getKey()).longValue());
 
-        Set<Long> friends = user.getFriends();
-        if (friends != null) {
-            friends.forEach(friendId -> jdbcTemplate.update(
-                    "insert into friends (user_id, friend_id, status) values (?, ?, false)",
-                    keyHolder.getKey().longValue(),
-                    friendId));
-        }
+//        Set<Long> friends = user.getFriends();
+//        if (friends != null) {
+//            friends.forEach(friendId -> jdbcTemplate.update(
+//                    "insert into friends (user_id, friend_id) values (?, ?)",
+//                    keyHolder.getKey().longValue(),
+//                    friendId));
+//        }
         return user;
     }
 
@@ -62,14 +61,14 @@ public class DbUserStorage implements UserStorage {
         if (userFound == 0) {
             throw new WrongUserIdException("No user with id = " + user.getId() + " in DB was found.");
         }
-        jdbcTemplate.update("delete from friends where user_id = ?", user.getId());
-        Set<Long> friends = user.getFriends();
-        if (friends != null) {
-            friends.forEach(friendId -> jdbcTemplate.update(
-                    "insert into friends (user_id, friend_id, status) values (?, ?, false)",
-                    user.getId(),
-                    friendId));
-        }
+//        jdbcTemplate.update("delete from friends where user_id = ?", user.getId());
+//        Set<Long> friends = user.getFriends();
+//        if (friends != null) {
+//            friends.forEach(friendId -> jdbcTemplate.update(
+//                    "insert into friends (user_id, friend_id) values (?, ?)",
+//                    user.getId(),
+//                    friendId));
+//        }
         return user;
     }
 
@@ -98,12 +97,11 @@ public class DbUserStorage implements UserStorage {
     }
 
     @Override
-    public List<User> getCommonFriendsByUsersIds(long userId, long otherId) {
+    public List<User> getCommonFriendsByUserId(long userId, long otherId) {
         String sql = "select u.* " +
-                "from friends fl1 join friends fl2 on fl1.user_id = fl2.user_id " +
-                "join users u on fl2.user_id = u.id " +
-                "where fl1.friend_id = ? and fl2.friend_id = ? " +
-                "and fl1.status = true and fl2.status = true";
+                "from friends fl1 join friends fl2 on fl1.friend_id = fl2.friend_id " +
+                "join users u on fl2.friend_id = u.id " +
+                "where fl1.user_id = ? and fl2.user_id = ?";
         return jdbcTemplate.query(sql, this::mapper, userId, otherId);
     }
 
@@ -120,19 +118,20 @@ public class DbUserStorage implements UserStorage {
     }
 
     private User mapper(ResultSet resultSet, int rowNum) throws SQLException {
-        Set<Long> friendIds = new HashSet<>(jdbcTemplate.query(
-                "select friend_id from friends where user_id = ?",
-                (resultSetLike, rowNumLike) -> resultSetLike.getLong(1),
-                resultSet.getLong(1)
-        ));
+
+//        Set<Long> friendIds = new HashSet<>(jdbcTemplate.query(
+//                "select friend_id from friends where user_id = ?",
+//                (resultSetLike, rowNumLike) -> resultSetLike.getLong(1),
+//                resultSet.getLong(1)
+//        ));
 
         return User.builder()
-                .id(resultSet.getLong("users.id"))
-                .name(resultSet.getString("users.name"))
-                .login(resultSet.getString("users.login"))
-                .email(resultSet.getString("users.email"))
-                .birthday(resultSet.getDate("users.birthday").toLocalDate())
-                .friends(friendIds)
+                .id(resultSet.getLong("id"))
+                .name(resultSet.getString("name"))
+                .login(resultSet.getString("login"))
+                .email(resultSet.getString("email"))
+                .birthday(resultSet.getDate("birthday").toLocalDate())
+//                .friends(friendIds)
                 .build();
     }
 }
