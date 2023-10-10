@@ -6,11 +6,11 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.exception.WrongUserIdException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.FriendStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserService {
     private final UserStorage userStorage;
+    private final FriendStorage friendStorage;
 
     public User create(User user) {
 
@@ -57,7 +58,7 @@ public class UserService {
             throw new WrongUserIdException("Param must be more then 0");
         }
 
-        userStorage.update(userStorage.getById(userId).addFriend(friendId));
+        friendStorage.addFriend(userId, friendId);
     }
 
     public void deleteFriend(long userId, long friendId) {
@@ -65,7 +66,7 @@ public class UserService {
             throw new WrongUserIdException("Param must be more then 0");
         }
 
-        userStorage.update(userStorage.getById(userId).removeFriend(friendId));
+        friendStorage.deleteFriend(userId, friendId);
     }
 
     public List<User> findCommonFriends(long userId, long otherId) {
@@ -73,16 +74,7 @@ public class UserService {
             throw new WrongUserIdException("Param must be more then 0");
         }
 
-        Set<Long> friendIds = userStorage.getById(otherId).getFriends();
-        return userStorage.getById(userId).getFriends().stream()
-                .filter(friendIds::contains)
-                .map(userStorage::getById)
-                .collect(Collectors.toList());
-    }
-
-    private boolean isNotValid(User user) {
-        return user.getLogin().contains(" ")
-                || user.getBirthday().isAfter(LocalDate.now());
+        return userStorage.getCommonFriendsByUserId(userId, otherId);
     }
 
     public User getById(long userId) {
@@ -98,9 +90,14 @@ public class UserService {
             throw new WrongUserIdException("Param must be more then 0");
         }
 
-        return userStorage.getById(userId).getFriends().stream()
+        return friendStorage.getFriendsByUserId(userId).stream()
                 .map(userStorage::getById)
                 .collect(Collectors.toList());
+    }
+
+    private boolean isNotValid(User user) {
+        return user.getLogin().contains(" ")
+                || user.getBirthday().isAfter(LocalDate.now());
     }
 
     private void changeNameToLogin(User user) {

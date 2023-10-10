@@ -9,17 +9,14 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.WrongFilmIdException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Repository
@@ -49,10 +46,6 @@ public class DbFilmStorage implements FilmStorage {
             genreUpdate(film);
         }
 
-        if (film.getLikeIds() != null) {
-            likeUpdate(film);
-        }
-
         return film;
     }
 
@@ -76,10 +69,6 @@ public class DbFilmStorage implements FilmStorage {
         if (film.getGenres() != null) {
             film.setGenres(film.getGenres().stream().distinct().collect(Collectors.toList()));
             genreUpdate(film);
-        }
-
-        if (film.getLikeIds() != null) {
-            likeUpdate(film);
         }
 
         return film;
@@ -109,6 +98,17 @@ public class DbFilmStorage implements FilmStorage {
         );
     }
 
+    @Override
+    public List<Film> getPopular(long count) {
+        return jdbcTemplate.query("select f.* from films f left join " +
+                        "(select fl.film_id, count(fl.user_id) cnt from film_like fl group by fl.film_id) l " +
+                        "on f.id = l.film_id " +
+                        "order by l.cnt desc " +
+                        "limit ?",
+                this::mapper,
+                count);
+    }
+
     private Film mapper(ResultSet resultSet, int rowNum) {
         try {
             Mpa mpa = jdbcTemplate.queryForObject(
@@ -120,21 +120,6 @@ public class DbFilmStorage implements FilmStorage {
                         return mpa1;
                     }, resultSet.getInt(6));
 
-            List<Genre> genres = jdbcTemplate.query(
-                    "select id, name from genres where id in (select genre_id from film_genre where film_id = ?)",
-                    (resultSetGenre, rowNumGenre) -> {
-                        Genre genre = new Genre();
-                        genre.setId(resultSetGenre.getInt("genres.id"));
-                        genre.setName(resultSetGenre.getString("genres.name"));
-                        return genre;
-                    }, resultSet.getLong(1));
-
-            Set<Long> likeIds = new HashSet<>(jdbcTemplate.query(
-                    "select user_id from film_like where film_id = ?",
-                    (resultSetLike, rowNumLike) -> resultSetLike.getLong("film_like.user_id"),
-                    resultSet.getLong("films.id")
-            ));
-
             return Film.builder()
                     .id(resultSet.getLong("films.id"))
                     .name(resultSet.getString("films.name"))
@@ -142,8 +127,6 @@ public class DbFilmStorage implements FilmStorage {
                     .releaseDate(resultSet.getDate("films.release_date").toLocalDate())
                     .duration(resultSet.getInt("films.duration"))
                     .mpa(mpa)
-                    .genres(genres)
-                    .likeIds(likeIds)
                     .build();
         } catch (SQLException e) {
             throw new WrongFilmIdException("Can't unwrap film from DB response");
@@ -163,25 +146,6 @@ public class DbFilmStorage implements FilmStorage {
                     @Override
                     public int getBatchSize() {
                         return film.getGenres().size();
-                    }
-                }
-        );
-    }
-
-    private void likeUpdate(Film film) {
-        jdbcTemplate.batchUpdate(
-                "insert into film_like (film_id, user_id) values (?, ?)",
-                new BatchPreparedStatementSetter() {
-                    @Override
-                    public void setValues(PreparedStatement ps, int i) throws SQLException {
-                        long likeId = List.copyOf(film.getLikeIds()).get(i);
-                        ps.setLong(1, film.getId());
-                        ps.setLong(2, likeId);
-                    }
-
-                    @Override
-                    public int getBatchSize() {
-                        return film.getLikeIds().size();
                     }
                 }
         );
