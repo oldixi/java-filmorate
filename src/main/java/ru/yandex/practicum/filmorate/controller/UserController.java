@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -69,5 +70,11 @@ public class UserController {
     public void deleteFriend(@PathVariable long id, @PathVariable long friendId) {
         log.info("Requested delete friend with id {} from user {}", friendId, id);
         userService.deleteFriend(id, friendId);
+    }
+
+    @GetMapping("/{id}/recommendations")
+    public List<Film> getRecommendations(@PathVariable long id) {
+        log.info("Requested recommendations for user {}", id);
+        return userService.getRecommendations(id);
     }
 }
