@@ -13,10 +13,14 @@ public class Review {
     @Size(max = 500)
     private String content;
 
-    private boolean isPositive;
+    @NotNull
+    private Boolean isPositive;
 
-    private long userId;
-    private long filmId;
+    @NotNull
+    private Long userId;
+
+    @NotNull
+    private Long filmId;
     private int useful;
 
     public long getReviewId() {
@@ -72,7 +76,7 @@ public class Review {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Review review = (Review) o;
-        return reviewId == review.reviewId && userId == review.userId && filmId == review.filmId && useful == review.useful && Objects.equals(content, review.content) && Objects.equals(isPositive, review.isPositive);
+        return reviewId == review.reviewId && Objects.equals(userId, review.userId) && Objects.equals(filmId, review.filmId) && useful == review.useful && Objects.equals(content, review.content) && Objects.equals(isPositive, review.isPositive);
     }
 
     @Override

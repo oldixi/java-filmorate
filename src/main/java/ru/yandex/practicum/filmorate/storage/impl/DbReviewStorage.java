@@ -16,6 +16,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -45,19 +46,19 @@ public class DbReviewStorage implements ReviewStorage {
     @Override
     public Review updateReview(Review review) {
 
-        int response = jdbcTemplate.update("update reviews set content = ?, is_positive = ?, user_id = ?, " +
-                        "film_id = ? where id = ?",
+        int response = jdbcTemplate.update("update reviews set content = ?, is_positive = ? " +
+                        "where id = ?",
                 review.getContent(),
                 review.getIsPositive(),
-                review.getUserId(),
-                review.getFilmId(),
+//                review.getUserId(),
+//                review.getFilmId(),
                 review.getReviewId());
 
         if (response == 0) {
             throw new WrongFilmIdException("No such review in DB with id = " + review.getReviewId() + ". Update failed");
         }
 
-        return review;
+        return getReviewById(review.getReviewId());
     }
 
     @Override
@@ -85,23 +86,26 @@ public class DbReviewStorage implements ReviewStorage {
     public List<Review> getAllReviews() {
         return jdbcTemplate.query(
                 "select r.*, u.cnt from reviews r left join (select review_id, sum(useful) cnt " +
-                        "from review_like group by review_id) u on r.id = u.review_id",
+                        "from review_like group by review_id) u on r.id = u.review_id order by u.cnt desc",
                 this::mapper
-        );
+        ).stream().sorted((review1, review2) -> review2.getUseful() - review1.getUseful()).collect(Collectors.toList());
     }
 
     //Выводим последние написанные отзывы для фильма
     @Override
     public List<Review> getReviewsByFilmId(long filmId, int count) {
+
         return jdbcTemplate.query(
-                "select r.*, u.cnt from reviews r join (select review_id, sum(useful) cnt from review_like group by review_id) u " +
-                        "on r.id = u.review_id" +
-                        "where r.film_id = ? sort by useful desc " +
-                        "limit = ?",
+                "select r.*, u.cnt from reviews r left join (select review_id, sum(useful) cnt " +
+                        "from review_like group by review_id) u " +
+                        "on r.id = u.review_id " +
+                        "where r.film_id = ? " +
+                        //  "order by u.cnt desc " +
+                        "limit ?",
                 this::mapper,
                 filmId,
                 count
-        );
+        ).stream().sorted((review1, review2) -> review2.getUseful() - review1.getUseful()).collect(Collectors.toList());
     }
 
     private Review mapper(ResultSet resultSet, int rowNum) {

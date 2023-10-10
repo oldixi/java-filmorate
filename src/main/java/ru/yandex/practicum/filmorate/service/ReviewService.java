@@ -22,7 +22,7 @@ public class ReviewService {
 
     public Review addReview(Review review) {
         if (isIncorrectId(review.getUserId()) || isIncorrectId(review.getFilmId())) {
-            throw new ValidationException("Wrong film or user id.");
+            throw new WrongFilmIdException("Wrong film or user id.");
         }
 
         return reviewStorage.addReview(review);
