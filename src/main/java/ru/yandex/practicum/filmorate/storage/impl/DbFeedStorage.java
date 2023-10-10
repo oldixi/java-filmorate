@@ -16,55 +16,55 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DbFeedStorage implements FeedStorage {
     private static String INSERT_SQL =
-            "insert into feeds(timestamp, operation, event_type, user_id, entity_id) values(?, ?, ?, ?, ?)";
+            "insert into events(timestamp, operation, event_type, user_id, entity_id) values(?, ?, ?, ?, ?)";
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public void addReview(long user_id, long entity_id) {
+    public void addReview(long userId, long entityId) {
         jdbcTemplate.update(INSERT_SQL, Timestamp.from(Instant.now()), Feed.Operation.ADD, Feed.EventType.REVIEW,
-                user_id, entity_id);
+                userId, entityId);
     }
 
     @Override
-    public void deleteReview(long user_id, long entity_id) {
+    public void deleteReview(long userId, long entityId) {
         jdbcTemplate.update(INSERT_SQL, Timestamp.from(Instant.now()), Feed.Operation.REMOVE, Feed.EventType.REVIEW,
-                user_id, entity_id);
+                userId, entityId);
     }
 
     @Override
-    public void updateReview(long user_id, long entity_id) {
+    public void updateReview(long userId, long entityId) {
         jdbcTemplate.update(INSERT_SQL, Timestamp.from(Instant.now()), Feed.Operation.UPDATE, Feed.EventType.REVIEW,
-                user_id, entity_id);
+                userId, entityId);
     }
 
     @Override
-    public void addLike(long user_id, long entity_id) {
+    public void addLike(long userId, long entityId) {
         jdbcTemplate.update(INSERT_SQL, Timestamp.from(Instant.now()), Feed.Operation.ADD, Feed.EventType.LIKE,
-                user_id, entity_id);
+                userId, entityId);
     }
 
     @Override
-    public void deleteLike(long user_id, long entity_id) {
+    public void deleteLike(long userId, long entityId) {
         jdbcTemplate.update(INSERT_SQL, Timestamp.from(Instant.now()), Feed.Operation.REMOVE, Feed.EventType.LIKE,
-                user_id, entity_id);
+                userId, entityId);
     }
 
     @Override
-    public void addFriendRequest(long user_id, long entity_id) {
+    public void addFriendRequest(long userId, long entityId) {
         jdbcTemplate.update(INSERT_SQL, Timestamp.from(Instant.now()), Feed.Operation.ADD, Feed.EventType.FRIEND,
-                user_id, entity_id);
+                userId, entityId);
     }
 
     @Override
-    public void deleteFriendRequest(long user_id, long entity_id) {
+    public void deleteFriendRequest(long userId, long entityId) {
         jdbcTemplate.update(INSERT_SQL, Timestamp.from(Instant.now()), Feed.Operation.REMOVE, Feed.EventType.FRIEND,
-                user_id, entity_id);
+                userId, entityId);
     }
 
     @Override
-    public void acceptFriendRequest(long user_id, long entity_id) {
+    public void acceptFriendRequest(long userId, long entityId) {
         jdbcTemplate.update(INSERT_SQL, Timestamp.from(Instant.now()), Feed.Operation.UPDATE, Feed.EventType.FRIEND,
-                user_id, entity_id);
+                userId, entityId);
     }
 
     @Override
@@ -85,7 +85,7 @@ public class DbFeedStorage implements FeedStorage {
 
     private Feed mapper(ResultSet resultSet) throws SQLException {
         long id = resultSet.getLong("id");
-        Timestamp timestamp = resultSet.getTimestamp("date");
+        Timestamp timestamp = resultSet.getTimestamp("timestamp");
         Feed.Operation operation = Feed.Operation.valueOf(resultSet.getString("operation"));
         Feed.EventType eventType = Feed.EventType.valueOf(resultSet.getString("event_type"));
         long userId = resultSet.getLong("user_id");
