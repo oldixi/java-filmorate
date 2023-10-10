@@ -77,14 +77,14 @@ public class FilmService {
 
         Film film = filmStorage.getById(filmId);
         film.setGenres(genreStorage.getByFilmId(filmId));
-        film.setDirector(directorStorage.getByFilmId(filmId));
+        film.setDirectors(directorStorage.getByFilmId(filmId));
         return film;
     }
 
     public List<Film> getAllFilms() {
         List<Film> films = filmStorage.getAllFilms();
         films.forEach(film -> film.setGenres(genreStorage.getByFilmId(film.getId())));
-        films.forEach(film -> film.setDirector(directorStorage.getByFilmId(film.getId())));
+        films.forEach(film -> film.setDirectors(directorStorage.getByFilmId(film.getId())));
         return films;
     }
 
@@ -95,7 +95,7 @@ public class FilmService {
 
         List<Film> films = filmStorage.getPopular(count);
         films.forEach(film -> film.setGenres(genreStorage.getByFilmId(film.getId())));
-        films.forEach(film -> film.setDirector(directorStorage.getByFilmId(film.getId())));
+        films.forEach(film -> film.setDirectors(directorStorage.getByFilmId(film.getId())));
         return films;
     }
 

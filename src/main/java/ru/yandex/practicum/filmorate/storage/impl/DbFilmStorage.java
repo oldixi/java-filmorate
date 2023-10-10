@@ -47,12 +47,12 @@ public class DbFilmStorage implements FilmStorage {
             genreUpdate(film);
         }
 
-        if (film.getDirector() != null) {
-            film.setDirector(film.getDirector().stream().distinct().collect(Collectors.toList()));
+        if (film.getDirectors() != null) {
+            film.setDirectors(film.getDirectors().stream().distinct().collect(Collectors.toList()));
             directorUpdate(film);
         }
 
-        return film;
+        return getById(film.getId());
     }
 
     @Override
@@ -77,12 +77,12 @@ public class DbFilmStorage implements FilmStorage {
             genreUpdate(film);
         }
 
-        if (film.getDirector() != null) {
-            film.setDirector(film.getDirector().stream().distinct().collect(Collectors.toList()));
+        if (film.getDirectors() != null) {
+            film.setDirectors(film.getDirectors().stream().distinct().collect(Collectors.toList()));
             directorUpdate(film);
         }
 
-        return film;
+        return getById(film.getId());
     }
 
     @Override
@@ -187,14 +187,14 @@ public class DbFilmStorage implements FilmStorage {
                 new BatchPreparedStatementSetter() {
                     @Override
                     public void setValues(PreparedStatement ps, int i) throws SQLException {
-                        long directorId = film.getDirector().get(i).getId();
+                        long directorId = film.getDirectors().get(i).getId();
                         ps.setLong(1, film.getId());
                         ps.setLong(2, directorId);
                     }
 
                     @Override
                     public int getBatchSize() {
-                        return film.getDirector().size();
+                        return film.getDirectors().size();
                     }
                 }
         );
