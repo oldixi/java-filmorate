@@ -2,14 +2,8 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -59,7 +53,7 @@ public class UserController {
         return userService.update(user);
     }
 
-    @PutMapping("/{id}/friends/{friendId}")
+    @PostMapping("/{id}/friends/{friendId}")
     public void addFriend(@PathVariable long id, @PathVariable long friendId) {
         log.info("Requested add friend with id {} to user {}", friendId, id);
         userService.addFriend(id, friendId);
@@ -71,9 +65,17 @@ public class UserController {
         userService.deleteFriend(id, friendId);
     }
 
-    @DeleteMapping("/{id}/friends/{friendId}")
+    @PutMapping("/{id}/friends/{friendId}")
     public void acceptFriendRequest(@PathVariable long id, @PathVariable long friendId) {
         log.info("Accept requested friend with id {} from user {}", friendId, id);
         userService.updateFriendRequest(id, friendId);
+    }
+
+    @GetMapping("/users/{id}/feed")
+    public List<Feed> getFilmsPopularList(@PathVariable long id,
+                                          @RequestParam(defaultValue = "0") int count,
+                                          @RequestParam(required = false) String operation,
+                                          @RequestParam(required = false) String object) {
+        return userService.getEventsList(id, count, operation, object);
     }
 }
