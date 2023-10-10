@@ -77,6 +77,8 @@ public class DbFilmStorage implements FilmStorage {
             genreUpdate(film);
         }
 
+        jdbcTemplate.update("delete from film_director where film_id = ?", film.getId());
+
         if (film.getDirectors() != null) {
             film.setDirectors(film.getDirectors().stream().distinct().collect(Collectors.toList()));
             directorUpdate(film);

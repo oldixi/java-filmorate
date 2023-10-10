@@ -44,7 +44,10 @@ public class FilmService {
         }
 
         log.info("Film updated {}", film);
-        return filmStorage.update(film);
+        Film film1 = filmStorage.update(film);
+        film1.setGenres(genreStorage.getByFilmId(film1.getId()));
+        film1.setDirectors(directorStorage.getByFilmId(film1.getId()));
+        return film1;
     }
 
     public void addLike(long userId, long filmId) {
@@ -104,7 +107,10 @@ public class FilmService {
 
     public List<Film> getTopByDirector(int id, String sortBy) {
         directorStorage.getDirectorById(id);
-        return filmStorage.getTopByDirector(id, sortBy);
+        List<Film> films =filmStorage.getTopByDirector(id, sortBy);
+        films.forEach(film -> film.setGenres(genreStorage.getByFilmId(film.getId())));
+        films.forEach(film -> film.setDirectors(directorStorage.getByFilmId(film.getId())));
+        return films;
     }
 
     private boolean isNotValid(Film film) {
