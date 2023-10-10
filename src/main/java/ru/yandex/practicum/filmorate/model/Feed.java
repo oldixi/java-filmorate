@@ -19,11 +19,11 @@ public class Feed {
         LIKE,
         FRIEND,
         REVIEW
-    };
+    }
 
     public enum Operation {
         ADD,
         UPDATE,
         REMOVE
-    };
+    }
 }
