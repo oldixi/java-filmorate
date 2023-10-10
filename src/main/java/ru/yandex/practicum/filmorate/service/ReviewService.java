@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.exception.WrongFilmIdException;
 import ru.yandex.practicum.filmorate.exception.WrongUserIdException;
 import ru.yandex.practicum.filmorate.model.Review;
@@ -20,10 +21,18 @@ public class ReviewService {
     private final ReviewLikeStorage reviewLikeStorage;
 
     public Review addReview(Review review) {
+        if (isIncorrectId(review.getUserId()) || isIncorrectId(review.getFilmId())) {
+            throw new ValidationException("Wrong film or user id.");
+        }
+
         return reviewStorage.addReview(review);
     }
 
     public Review updateReview(Review review) {
+        if (isIncorrectId(review.getUserId()) || isIncorrectId(review.getFilmId())) {
+            throw new ValidationException("Wrong film or user id.");
+        }
+
         return reviewStorage.updateReview(review);
     }
 
