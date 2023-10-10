@@ -71,7 +71,9 @@ public class DbReviewStorage implements ReviewStorage {
 
     @Override
     public Review getReviewById(long id) {
-        String sqlQuery = "select r.*, rl.sum(useful) join review_like rl on r.id = rl.review_id " +
+        String sqlQuery = "select r.*, u.cnt from reviews r " +
+                "join (select review_id, sum(useful) cnt " +
+                "from review_like group by review_id) u on r.id = u.review_id " +
                 "where r.film_id = ?";
         try {
             return jdbcTemplate.queryForObject(sqlQuery, this::mapper, id);
@@ -83,8 +85,10 @@ public class DbReviewStorage implements ReviewStorage {
     @Override
     public List<Review> getAllReviews() {
         return jdbcTemplate.query(
-                "select r.*, rl.sum(useful) join review_like rl on r.id = rl.review_id " +
-                        "sort by rl.sum(useful) desc",
+                "select r.*, u.cnt from reviews r left join (select review_id, sum(useful) cnt from review_like group by review_id) u " +
+                        "on r.id = u.review_id",
+                       // "where r.film_id = ? sort by useful desc " +
+                       // "limit = ?",
                 this::mapper
         );
     }
@@ -93,8 +97,9 @@ public class DbReviewStorage implements ReviewStorage {
     @Override
     public List<Review> getReviewsByFilmId(long filmId, int count) {
         return jdbcTemplate.query(
-                "select r.*, rl.sum(useful) join review_like rl on r.id = rl.review_id " +
-                        "where r.film_id = ? sort by rl.sum(useful) desc " +
+                "select r.*, u.cnt from reviews r join (select review_id, sum(useful) cnt from review_like group by review_id) u " +
+                        "on r.id = u.review_id" +
+                        "where r.film_id = ? sort by useful desc " +
                         "limit = ?",
                 this::mapper,
                 filmId,
@@ -105,15 +110,15 @@ public class DbReviewStorage implements ReviewStorage {
     private Review mapper(ResultSet resultSet, int rowNum) {
         try {
             return Review.builder()
-                    .id(resultSet.getLong("reviews.id"))
-                    .content(resultSet.getString("reviews.content"))
-                    .isPositive(resultSet.getBoolean("reviews.is_positive"))
-                    .userId(resultSet.getLong("reviews.user_id"))
-                    .filmId(resultSet.getLong("reviews.film_id"))
-                    .useful(resultSet.getInt("review_like.useful"))
+                    .id(resultSet.getLong("id"))
+                    .content(resultSet.getString("content"))
+                    .isPositive(resultSet.getBoolean("is_positive"))
+                    .userId(resultSet.getLong("user_id"))
+                    .filmId(resultSet.getLong("film_id"))
+                    .useful(resultSet.getInt("u.cnt"))
                     .build();
         } catch (SQLException e) {
-            throw new WrongFilmIdException("Can't unwrap review from DB response");
+            throw new WrongFilmIdException(e.getMessage());
         }
     }
 
