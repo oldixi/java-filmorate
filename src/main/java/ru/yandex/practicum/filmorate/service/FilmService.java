@@ -107,7 +107,7 @@ public class FilmService {
 
     public List<Film> getTopByDirector(int id, String sortBy) {
         directorStorage.getDirectorById(id);
-        List<Film> films =filmStorage.getTopByDirector(id, sortBy);
+        List<Film> films = filmStorage.getTopByDirector(id, sortBy);
         films.forEach(film -> film.setGenres(genreStorage.getByFilmId(film.getId())));
         films.forEach(film -> film.setDirectors(directorStorage.getByFilmId(film.getId())));
         return films;
