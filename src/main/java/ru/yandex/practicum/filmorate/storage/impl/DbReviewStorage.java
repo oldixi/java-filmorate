@@ -32,12 +32,12 @@ public class DbReviewStorage implements ReviewStorage {
         jdbcTemplate.update(connection -> {
             PreparedStatement stmt = connection.prepareStatement(sqlQuery, new String[]{"id"});
             stmt.setString(1, review.getContent());
-            stmt.setBoolean(2, review.isPositive());
+            stmt.setBoolean(2, review.getIsPositive());
             stmt.setLong(3, review.getUserId());
             stmt.setLong(4, review.getFilmId());
             return stmt;
         }, keyHolder);
-        review.setId(Objects.requireNonNull(keyHolder.getKey()).longValue());
+        review.setReviewId(Objects.requireNonNull(keyHolder.getKey()).longValue());
 
         return review;
     }
@@ -48,13 +48,13 @@ public class DbReviewStorage implements ReviewStorage {
         int response = jdbcTemplate.update("update reviews set content = ?, is_positive = ?, user_id = ?, " +
                         "film_id = ? where id = ?",
                 review.getContent(),
-                review.isPositive(),
+                review.getIsPositive(),
                 review.getUserId(),
                 review.getFilmId(),
-                review.getId());
+                review.getReviewId());
 
         if (response == 0) {
-            throw new WrongFilmIdException("No such review in DB with id = " + review.getId() + ". Update failed");
+            throw new WrongFilmIdException("No such review in DB with id = " + review.getReviewId() + ". Update failed");
         }
 
         return review;
@@ -87,8 +87,8 @@ public class DbReviewStorage implements ReviewStorage {
         return jdbcTemplate.query(
                 "select r.*, u.cnt from reviews r left join (select review_id, sum(useful) cnt from review_like group by review_id) u " +
                         "on r.id = u.review_id",
-                       // "where r.film_id = ? sort by useful desc " +
-                       // "limit = ?",
+                // "where r.film_id = ? sort by useful desc " +
+                // "limit = ?",
                 this::mapper
         );
     }
@@ -109,14 +109,14 @@ public class DbReviewStorage implements ReviewStorage {
 
     private Review mapper(ResultSet resultSet, int rowNum) {
         try {
-            return Review.builder()
-                    .id(resultSet.getLong("id"))
-                    .content(resultSet.getString("content"))
-                    .isPositive(resultSet.getBoolean("is_positive"))
-                    .userId(resultSet.getLong("user_id"))
-                    .filmId(resultSet.getLong("film_id"))
-                    .useful(resultSet.getInt("u.cnt"))
-                    .build();
+            Review review = new Review();
+            review.setReviewId(resultSet.getLong("id"));
+            review.setContent(resultSet.getString("content"));
+            review.setIsPositive(resultSet.getBoolean("is_positive"));
+            review.setUserId(resultSet.getLong("user_id"));
+            review.setFilmId(resultSet.getLong("film_id"));
+            review.setUseful(resultSet.getInt("u.cnt"));
+            return review;
         } catch (SQLException e) {
             throw new WrongFilmIdException(e.getMessage());
         }
