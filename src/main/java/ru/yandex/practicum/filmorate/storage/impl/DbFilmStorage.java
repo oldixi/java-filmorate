@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.exception.WrongFilmIdException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -46,6 +47,11 @@ public class DbFilmStorage implements FilmStorage {
             genreUpdate(film);
         }
 
+        if (film.getDirector() != null) {
+            film.setDirector(film.getDirector().stream().distinct().collect(Collectors.toList()));
+            directorUpdate(film);
+        }
+
         return film;
     }
 
@@ -69,6 +75,11 @@ public class DbFilmStorage implements FilmStorage {
         if (film.getGenres() != null) {
             film.setGenres(film.getGenres().stream().distinct().collect(Collectors.toList()));
             genreUpdate(film);
+        }
+
+        if (film.getDirector() != null) {
+            film.setDirector(film.getDirector().stream().distinct().collect(Collectors.toList()));
+            directorUpdate(film);
         }
 
         return film;
@@ -107,6 +118,26 @@ public class DbFilmStorage implements FilmStorage {
                         "limit ?",
                 this::mapper,
                 count);
+    }
+
+    @Override
+    public List<Film> getTopByDirector(int id, String sortBy) {
+        String sqlRequest = "SELECT f.* FROM films f LEFT JOIN " +
+                "(SELECT fl.film_id, COUNT(fl.user_id) cnt FROM film_like fl GROUP BY fl.film_id) l " +
+                "on f.id = l.film_id " +
+                "WHERE f.id IN (SELECT film_id FROM film_director WHERE director_id = ?)";
+        switch (sortBy) {
+            case "year":
+                sqlRequest = sqlRequest + "ORDER BY f.release_date";
+                break;
+            case "likes":
+                sqlRequest = sqlRequest + "ORDER BY cnt";
+                break;
+            default:
+                throw new ValidationException("No such sort was found");
+        }
+
+        return jdbcTemplate.query(sqlRequest, this::mapper, id);
     }
 
     private Film mapper(ResultSet resultSet, int rowNum) {
@@ -151,4 +182,21 @@ public class DbFilmStorage implements FilmStorage {
         );
     }
 
+    private void directorUpdate(Film film) {
+        jdbcTemplate.batchUpdate("INSERT INTO film_director (film_id, director_id) VALUES (?, ?)",
+                new BatchPreparedStatementSetter() {
+                    @Override
+                    public void setValues(PreparedStatement ps, int i) throws SQLException {
+                        long directorId = film.getDirector().get(i).getId();
+                        ps.setLong(1, film.getId());
+                        ps.setLong(2, directorId);
+                    }
+
+                    @Override
+                    public int getBatchSize() {
+                        return film.getDirector().size();
+                    }
+                }
+        );
+    }
 }
