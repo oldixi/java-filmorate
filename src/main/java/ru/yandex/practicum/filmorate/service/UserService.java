@@ -117,8 +117,8 @@ public class UserService {
             }
         }
         int finalMaxSize = maxSize;
-        List<User> sortedCommonUsers = commonUsers.stream().
-                filter(u -> getCommonFilmLikes(user, u).size() == finalMaxSize).collect(Collectors.toList());
+        List<User> sortedCommonUsers = commonUsers.stream()
+                .filter(u -> getCommonFilmLikes(user, u).size() == finalMaxSize).collect(Collectors.toList());
         List<Film> recommendedFilms = new ArrayList<>();
         for (User u : sortedCommonUsers) {
             for (long filmId : likeStorage.getLikesByUserId(u.getId())) {
