@@ -6,21 +6,21 @@ import java.util.List;
 
 public interface FeedStorage {
 
-    void addLike(long user_id, long entity_id);
+    void addLike(long userId, long entityId);
 
-    void deleteLike(long user_id, long entity_id);
+    void deleteLike(long userId, long entityId);
 
-    void addReview(long user_id, long entity_id);
+    void addReview(long userId, long entityId);
 
-    void deleteReview(long user_id, long entity_id);
+    void deleteReview(long userId, long entityId);
 
-    void updateReview(long user_id, long entity_id);
+    void updateReview(long userId, long entityId);
 
-    void addFriendRequest(long user_id, long entity_id);
+    void addFriendRequest(long userId, long entityId);
 
-    void deleteFriendRequest(long user_id, long entity_id);
+    void deleteFriendRequest(long userId, long entityId);
 
-    void acceptFriendRequest(long user_id, long entity_id);
+    void acceptFriendRequest(long userId, long entityId);
 
     List<Feed> getFeedList(long userId, int count, Feed.Operation operation, Feed.EventType eventType);
 
