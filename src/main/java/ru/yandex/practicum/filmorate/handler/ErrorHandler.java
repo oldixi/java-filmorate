@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.handler;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -10,6 +11,7 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.exception.WrongFilmIdException;
 import ru.yandex.practicum.filmorate.exception.WrongUserIdException;
 
+import javax.validation.ConstraintViolationException;
 import java.util.Map;
 
 @Slf4j
@@ -22,7 +24,8 @@ public class ErrorHandler {
         return Map.of("Error", e.getMessage());
     }
 
-    @ExceptionHandler({WrongUserIdException.class, WrongFilmIdException.class})
+    @ExceptionHandler({WrongUserIdException.class, WrongFilmIdException.class,
+            MethodArgumentNotValidException.class, ConstraintViolationException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Map<String, String> wrongUserIdException(final Exception e) {
         log.warn("Invalid id {}. Stacktrace {}", e.getMessage(), e.getCause());

@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.model;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.util.Objects;
 
@@ -17,10 +16,7 @@ public class Review {
     @NotNull
     private boolean isPositive;
 
-    @Positive
     private long userId;
-
-    @Positive
     private long filmId;
     private int useful;
 

@@ -3,6 +3,8 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.WrongFilmIdException;
+import ru.yandex.practicum.filmorate.exception.WrongUserIdException;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.storage.ReviewLikeStorage;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
@@ -26,10 +28,18 @@ public class ReviewService {
     }
 
     public void deleteReview(long id) {
+        if (isIncorrectId(id)) {
+            throw new WrongFilmIdException("Bad review id");
+        }
+
         reviewStorage.deleteReview(id);
     }
 
     public Review getReviewById(long id) {
+        if (isIncorrectId(id)) {
+            throw new WrongFilmIdException("Bad review id");
+        }
+
         return reviewStorage.getReviewById(id);
     }
 
@@ -38,19 +48,51 @@ public class ReviewService {
     }
 
     public List<Review> getReviewsByFilmId(long filmId, int count) {
+        if (isIncorrectId(filmId)) {
+            throw new WrongFilmIdException("Bad film id");
+        }
+
         return reviewStorage.getReviewsByFilmId(filmId, count);
     }
 
     public void addLikeToReview(long id, long userId) {
+        if (isIncorrectId(id)) {
+            throw new WrongFilmIdException("Bad review id");
+        }
+
+        if (isIncorrectId(userId)) {
+            throw new WrongUserIdException("Bad user id");
+        }
+
         reviewLikeStorage.addLike(id, userId);
     }
 
 
     public void addDislikeToReview(long id, long userId) {
+        if (isIncorrectId(id)) {
+            throw new WrongFilmIdException("Bad review id");
+        }
+
+        if (isIncorrectId(userId)) {
+            throw new WrongUserIdException("Bad user id");
+        }
+
         reviewLikeStorage.addDislike(id, userId);
     }
 
     public void deleteLikeOrDislike(long id, long userId) {
+        if (isIncorrectId(id)) {
+            throw new WrongFilmIdException("Bad review id");
+        }
+
+        if (isIncorrectId(userId)) {
+            throw new WrongUserIdException("Bad user id");
+        }
+
         reviewLikeStorage.deleteLikeOrDislike(id, userId);
+    }
+
+    private boolean isIncorrectId(long id) {
+        return id <= 0;
     }
 }

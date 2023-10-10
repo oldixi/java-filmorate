@@ -71,24 +71,21 @@ public class DbReviewStorage implements ReviewStorage {
 
     @Override
     public Review getReviewById(long id) {
-        String sqlQuery = "select r.*, u.cnt from reviews r " +
-                "join (select review_id, sum(useful) cnt " +
+        String sqlQuery = "select r.*, u.cnt from reviews r left join (select review_id, sum(useful) cnt " +
                 "from review_like group by review_id) u on r.id = u.review_id " +
-                "where r.film_id = ?";
+                "where r.id = ?";
         try {
             return jdbcTemplate.queryForObject(sqlQuery, this::mapper, id);
         } catch (EmptyResultDataAccessException e) {
-            throw new WrongFilmIdException("There is no film in DB with id = " + id);
+            throw new WrongFilmIdException("There is no review in DB with id = " + id);
         }
     }
 
     @Override
     public List<Review> getAllReviews() {
         return jdbcTemplate.query(
-                "select r.*, u.cnt from reviews r left join (select review_id, sum(useful) cnt from review_like group by review_id) u " +
-                        "on r.id = u.review_id",
-                // "where r.film_id = ? sort by useful desc " +
-                // "limit = ?",
+                "select r.*, u.cnt from reviews r left join (select review_id, sum(useful) cnt " +
+                        "from review_like group by review_id) u on r.id = u.review_id",
                 this::mapper
         );
     }
