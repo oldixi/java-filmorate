@@ -50,6 +50,21 @@ CREATE TABLE friends (
     PRIMARY KEY (user_id, friend_id)
 );
 
+CREATE TABLE reviews (
+    id int PRIMARY KEY AUTO_INCREMENT NOT NULL,
+    content varchar(500) NOT NULL,
+    is_positive boolean NOT NULL,
+    user_id int NOT NULL,
+    film_id int NOT NULL
+);
+
+CREATE TABLE review_like (
+    review_id int NOT NULL,
+    user_id int NOT NULL,
+    useful int NOT NULL,
+    PRIMARY KEY (review_id, user_id)
+);
+
 ALTER TABLE film_genre ADD CONSTRAINT fk_film_id FOREIGN KEY(film_id) REFERENCES films(id);
 ALTER TABLE film_genre ADD CONSTRAINT fk_genre_id FOREIGN KEY(genre_id) REFERENCES genres(id);
 
@@ -61,3 +76,9 @@ ALTER TABLE friends ADD CONSTRAINT fk_friend_id FOREIGN KEY(friend_id) REFERENCE
 
 ALTER TABLE film_feedback ADD CONSTRAINT fk_film_fb_id FOREIGN KEY(film_id) REFERENCES films(id);
 ALTER TABLE film_feedback ADD CONSTRAINT fk_user_fb_id FOREIGN KEY(user_id) REFERENCES users(id);
+
+ALTER TABLE reviews ADD CONSTRAINT fk_rev_film_id FOREIGN KEY(film_id) REFERENCES films(id);
+ALTER TABLE reviews ADD CONSTRAINT fk_rev_user_id FOREIGN KEY(user_id) REFERENCES users(id);
+
+ALTER TABLE review_like ADD CONSTRAINT fk_rl_rev_id FOREIGN KEY(review_id) REFERENCES reviews(id);
+ALTER TABLE review_like ADD CONSTRAINT fk_rl_user_id FOREIGN KEY(user_id) REFERENCES users(id);
