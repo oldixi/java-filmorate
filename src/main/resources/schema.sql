@@ -65,20 +65,20 @@ CREATE TABLE review_like (
     PRIMARY KEY (review_id, user_id)
 );
 
-ALTER TABLE film_genre ADD CONSTRAINT fk_film_id FOREIGN KEY(film_id) REFERENCES films(id);
-ALTER TABLE film_genre ADD CONSTRAINT fk_genre_id FOREIGN KEY(genre_id) REFERENCES genres(id);
+ALTER TABLE film_genre ADD CONSTRAINT fk_film_id FOREIGN KEY(film_id) REFERENCES films(id) ON DELETE CASCADE;
+ALTER TABLE film_genre ADD CONSTRAINT fk_genre_id FOREIGN KEY(genre_id) REFERENCES genres(id) ON DELETE CASCADE;
 
-ALTER TABLE film_like ADD CONSTRAINT fk_film_id_like FOREIGN KEY(film_id) REFERENCES films(id);
-ALTER TABLE film_like ADD CONSTRAINT fk_user_id_like FOREIGN KEY(user_id) REFERENCES users(id);
+ALTER TABLE film_like ADD CONSTRAINT fk_film_id_like FOREIGN KEY(film_id) REFERENCES films(id) ON DELETE CASCADE;
+ALTER TABLE film_like ADD CONSTRAINT fk_user_id_like FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE;
 
-ALTER TABLE friends ADD CONSTRAINT fk_user_id FOREIGN KEY(user_id) REFERENCES users(id);
-ALTER TABLE friends ADD CONSTRAINT fk_friend_id FOREIGN KEY(friend_id) REFERENCES users(id);
+ALTER TABLE friends ADD CONSTRAINT fk_user_id FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE;
+ALTER TABLE friends ADD CONSTRAINT fk_friend_id FOREIGN KEY(friend_id) REFERENCES users(id) ON DELETE CASCADE;
 
-ALTER TABLE film_feedback ADD CONSTRAINT fk_film_fb_id FOREIGN KEY(film_id) REFERENCES films(id);
-ALTER TABLE film_feedback ADD CONSTRAINT fk_user_fb_id FOREIGN KEY(user_id) REFERENCES users(id);
+ALTER TABLE film_feedback ADD CONSTRAINT fk_film_fb_id FOREIGN KEY(film_id) REFERENCES films(id) ON DELETE CASCADE;
+ALTER TABLE film_feedback ADD CONSTRAINT fk_user_fb_id FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE;
 
-ALTER TABLE reviews ADD CONSTRAINT fk_rev_film_id FOREIGN KEY(film_id) REFERENCES films(id);
-ALTER TABLE reviews ADD CONSTRAINT fk_rev_user_id FOREIGN KEY(user_id) REFERENCES users(id);
+ALTER TABLE reviews ADD CONSTRAINT fk_rev_film_id FOREIGN KEY(film_id) REFERENCES films(id) ON DELETE CASCADE;
+ALTER TABLE reviews ADD CONSTRAINT fk_rev_user_id FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE;
 
-ALTER TABLE review_like ADD CONSTRAINT fk_rl_rev_id FOREIGN KEY(review_id) REFERENCES reviews(id);
-ALTER TABLE review_like ADD CONSTRAINT fk_rl_user_id FOREIGN KEY(user_id) REFERENCES users(id);
+ALTER TABLE review_like ADD CONSTRAINT fk_rl_rev_id FOREIGN KEY(review_id) REFERENCES reviews(id) ON DELETE CASCADE;
+ALTER TABLE review_like ADD CONSTRAINT fk_rl_user_id FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE;

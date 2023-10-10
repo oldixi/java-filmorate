@@ -13,7 +13,6 @@ public class Review {
     @Size(max = 500)
     private String content;
 
-    @NotNull
     private boolean isPositive;
 
     private long userId;
