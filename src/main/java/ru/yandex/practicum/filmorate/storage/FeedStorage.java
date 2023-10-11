@@ -22,6 +22,6 @@ public interface FeedStorage {
 
     void acceptFriendRequest(long userId, long entityId);
 
-    List<Feed> getFeedList(long userId, int count, Feed.Operation operation, Feed.EventType eventType);
+    List<Feed> getFeedList(long userId);
 
 }

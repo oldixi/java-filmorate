@@ -11,17 +11,14 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.LikeStorage;
 
-import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class FilmService {
-    private static final LocalDate EARLIEST_FILM_RELEASE = LocalDate.of(1895, 12, 5);
+    private static final LocalDate EARLIESTFILMRELEASE = LocalDate.of(1895, 12, 5);
     private final FilmStorage filmStorage;
     private final LikeStorage likeStorage;
     private final GenreStorage genreStorage;

@@ -7,6 +7,7 @@ mvnw
 mvnw.cmd
 .cmd
 /db/
+*Test*
 
 ### STS ###
 .apt_generated

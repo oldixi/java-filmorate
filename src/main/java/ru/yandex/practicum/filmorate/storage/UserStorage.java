@@ -15,8 +15,6 @@ public interface UserStorage {
 
     List<User> getAll();
 
-    List<User> getCommonFriendsByUsersIds(long userId, long otherId);
-
-    void acceptFriendRequest(User requestUser, User acceptUser);
+    List<User> getCommonFriendsByUserId(long userId, long otherId);
 
 }

@@ -8,7 +8,6 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.WrongUserIdException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.sql.PreparedStatement;
@@ -22,7 +21,6 @@ import java.util.Objects;
 public class DbUserStorage implements UserStorage {
 
     private final JdbcTemplate jdbcTemplate;
-    private final FeedStorage feedStorage;
 
     @Override
     public User add(User user) {
@@ -103,18 +101,6 @@ public class DbUserStorage implements UserStorage {
                 "join users u on fl2.friend_id = u.id " +
                 "where fl1.user_id = ? and fl2.user_id = ?";
         return jdbcTemplate.query(sql, this::mapper, userId, otherId);
-    }
-
-    private Long getFriendshipId(User user, User friend) {
-        return jdbcTemplate.queryForObject("select id from friends where user_id = ? and friend_id = ?",
-                Long.class, user.getId(), friend.getId());
-    }
-
-    @Override
-    public void acceptFriendRequest(User user, User friend) {
-        long friendshipId = getFriendshipId(user, friend);
-        jdbcTemplate.update("update friends set status_code = true where id = ?", friendshipId);
-        feedStorage.acceptFriendRequest(user.getId(), friendshipId);
     }
 
     private User mapper(ResultSet resultSet, int rowNum) throws SQLException {

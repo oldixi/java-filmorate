@@ -53,7 +53,7 @@ public class UserController {
         return userService.update(user);
     }
 
-    @PostMapping("/{id}/friends/{friendId}")
+    @PutMapping("/{id}/friends/{friendId}")
     public void addFriend(@PathVariable long id, @PathVariable long friendId) {
         log.info("Requested add friend with id {} to user {}", friendId, id);
         userService.addFriend(id, friendId);
@@ -65,17 +65,16 @@ public class UserController {
         userService.deleteFriend(id, friendId);
     }
 
-    @PutMapping("/{id}/friends/{friendId}")
+    @PostMapping("/{id}/friends/{friendId}")
     public void acceptFriendRequest(@PathVariable long id, @PathVariable long friendId) {
         log.info("Accept requested friend with id {} from user {}", friendId, id);
         userService.updateFriendRequest(id, friendId);
     }
 
-    @GetMapping("/users/{id}/feed")
-    public List<Feed> getFilmsPopularList(@PathVariable long id,
-                                          @RequestParam(defaultValue = "0") int count,
-                                          @RequestParam(required = false) String operation,
-                                          @RequestParam(required = false) String object) {
-        return userService.getEventsList(id, count, operation, object);
+    @GetMapping("/{id}/feed")
+    public List<Feed> getEventsList(@PathVariable long id) {
+        log.info("Requested feed for user id {}", id);
+        return userService.getEventsList(id);
     }
+
 }
