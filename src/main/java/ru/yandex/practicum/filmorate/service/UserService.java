@@ -122,23 +122,17 @@ public class UserService {
     public List<Film> getRecommendations(long id) {
         User user = userStorage.getById(id);
         Set<Long> likedFilms = likeStorage.getLikesByUserId(id);
-        int maxSize = 0;
         List<User> commonUsers = new ArrayList<>();
         if (likedFilms.isEmpty()) {
-            return filmStorage.getPopular(DEFAULT_VALUE_FOR_TOP_FILMS);
+            return new ArrayList<>();
         }
         for (User anotherUser : userStorage.getAll()) {
-            int filmSize = getCommonFilmLikes(user, anotherUser).size();
-            if (filmSize >= maxSize && !user.equals(anotherUser)) {
-                maxSize = filmSize;
-                commonUsers.add(user);
+            if (!getCommonFilmLikes(user, anotherUser).isEmpty() && !anotherUser.equals(user)) {
+                commonUsers.add(anotherUser);
             }
         }
-        int finalMaxSize = maxSize;
-        List<User> sortedCommonUsers = commonUsers.stream()
-                .filter(u -> getCommonFilmLikes(user, u).size() == finalMaxSize).collect(Collectors.toList());
         List<Film> recommendedFilms = new ArrayList<>();
-        for (User u : sortedCommonUsers) {
+        for (User u : commonUsers) {
             for (long filmId : likeStorage.getLikesByUserId(u.getId())) {
                 if (!likedFilms.contains(filmId)) {
                     recommendedFilms.add(filmStorage.getById(filmId));
