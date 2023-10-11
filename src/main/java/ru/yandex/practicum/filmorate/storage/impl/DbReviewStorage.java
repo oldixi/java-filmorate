@@ -71,7 +71,7 @@ public class DbReviewStorage implements ReviewStorage {
         }
         Review review = getReviewById(id);
         jdbcTemplate.update("delete from reviews where id = ?", id);
-        feedStorage.deleteReview(review.getUserId(), id/*review.getFilmId()*/);
+        feedStorage.deleteReview(review.getUserId(), id);
     }
 
     @Override
@@ -102,7 +102,6 @@ public class DbReviewStorage implements ReviewStorage {
                         "from review_like group by review_id) u " +
                         "on r.id = u.review_id " +
                         "where r.film_id = ? " +
-                        //  "order by u.cnt desc " +
                         "limit ?",
                 this::mapper,
                 filmId,
