@@ -17,7 +17,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -26,7 +25,6 @@ public class DbReviewStorage implements ReviewStorage {
 
     private final JdbcTemplate jdbcTemplate;
     private final FeedStorage feedStorage;
-
 
     @Override
     public Review addReview(Review review) {
@@ -46,7 +44,7 @@ public class DbReviewStorage implements ReviewStorage {
             log.info("Добавлен отзыв {} от пользователя {} фильму {}.",
                     Objects.requireNonNull(keyHolder.getKey()).longValue(), review.getUserId(), review.getFilmId());
         }
-  
+
         review.setReviewId(Objects.requireNonNull(keyHolder.getKey()).longValue());
         feedStorage.addReview(review.getUserId(), review.getReviewId());
 
@@ -75,7 +73,7 @@ public class DbReviewStorage implements ReviewStorage {
         if (isIncorrectId(id)) {
             throw new WrongFilmIdException("Id must be more than 0");
         }
-      
+
         Review review = getReviewById(id);
         jdbcTemplate.update("delete from reviews where id = ?", id);
         feedStorage.deleteReview(review.getUserId(), id);
@@ -137,6 +135,5 @@ public class DbReviewStorage implements ReviewStorage {
     private boolean isIncorrectId(long id) {
         return id <= 0;
     }
-
 }
 
