@@ -74,7 +74,6 @@ public class FilmService {
         if (isIncorrectId(filmId)) {
             throw new WrongFilmIdException("Param must be more then 0");
         }
-
         return filmStorage.getById(filmId);
     }
 
@@ -92,7 +91,7 @@ public class FilmService {
     }
 
     public List<Film> getCommonFilms(long userId, long friendId) {
-        return filmStorage.getCommonFilms(userId, friendId);;
+        return filmStorage.getCommonFilms(userId, friendId);
     }
 
     private boolean isNotValid(Film film) {

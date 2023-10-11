@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
+@Slf4j
 public class DbFilmStorage implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
@@ -121,16 +123,18 @@ public class DbFilmStorage implements FilmStorage {
 
     @Override
     public List<Film> getPopular(int count, int genreId, int year) {
+        log.info("Поиск {} самых популярных фильмов по жанру {} за {} год", count, genreId, year);
         return jdbcTemplate.query("select f.* " +
-                        "from films f left join " +
-                        "(select fl.film_id, count(fl.user_id) cnt " +
-                        "from film_like fl group by fl.film_id) l on f.id = l.film_id join " +
-                        "(select fg.film_id " +
-                        "from film_genre fg " +
-                        "where fg.genre_id = decode(?, -9999, fg.genre_id, ?) group by fg.film_id) g on f.id = g.film_id " +
-                        "where year(f.release_date) = decode(?, -9999, year(f.release_date), ?) " +
-                        "order by l.cnt desc " +
-                        "limit ?", this::mapper, genreId, genreId, year, year, count);
+                "from films f " +
+                "left join (select fl.film_id, count(fl.user_id) cnt from film_like fl group by fl.film_id) l " +
+                "on f.id = l.film_id " +
+                "left join (select fg.film_id from film_genre fg " +
+                "where fg.genre_id = decode(?, -9999, fg.genre_id, ?) group by fg.film_id) g " +
+                "on f.id = g.film_id " +
+                "where f.id = decode(?, -9999, f.id, g.film_id) " +
+                "and year(f.release_date) = decode(?, -9999, year(f.release_date), ?) " +
+                "order by l.cnt desc " +
+                "limit ?", this::mapper, genreId, genreId, genreId, year, year, count);
     }
 
     @Override
@@ -163,17 +167,18 @@ public class DbFilmStorage implements FilmStorage {
     }
 
     private Film mapper(ResultSet resultSet, int rowNum) {
+        log.info("mapper.rowNum = {}", rowNum);
         try {
-            Mpa mpa = mpaStorage.getById(resultSet.getInt("films.rating"));
-            List<Genre> genres = genreStorage.getByFilmId(resultSet.getLong("films.id"));
-            List<Director> directors = directorStorage.getByFilmId(resultSet.getLong("films.id"));
+            Mpa mpa = mpaStorage.getById(resultSet.getInt("rating"));
+            List<Genre> genres = genreStorage.getByFilmId(resultSet.getLong("id"));
+            List<Director> directors = directorStorage.getByFilmId(resultSet.getLong("id"));
 
             return Film.builder()
-                    .id(resultSet.getLong("films.id"))
-                    .name(resultSet.getString("films.name"))
-                    .description(resultSet.getString("films.description"))
-                    .releaseDate(resultSet.getDate("films.release_date").toLocalDate())
-                    .duration(resultSet.getInt("films.duration"))
+                    .id(resultSet.getLong("id"))
+                    .name(resultSet.getString("name"))
+                    .description(resultSet.getString("description"))
+                    .releaseDate(resultSet.getDate("release_date").toLocalDate())
+                    .duration(resultSet.getInt("duration"))
                     .mpa(mpa)
                     .genres(genres)
                     .directors(directors)
