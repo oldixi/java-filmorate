@@ -57,4 +57,5 @@ public class DbReviewLikeStorage implements ReviewLikeStorage {
 
         return useful.get();
     }
+  
 }

@@ -15,7 +15,6 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
-import java.sql.SQLException;
 import java.util.List;
 
 @Slf4j
@@ -26,7 +25,7 @@ public class FilmController {
     private final FilmService filmService;
 
     @GetMapping
-    public List<Film> getAllFilms() throws SQLException {
+    public List<Film> getAllFilms() {
         log.info("Get list of films.");
         return filmService.getAllFilms();
     }
@@ -41,6 +40,12 @@ public class FilmController {
     public List<Film> getPopularFilms(@RequestParam(defaultValue = "10") int count) {
         log.info("Requested most popular {} films", count);
         return filmService.getTopFilms(count);
+    }
+
+    @GetMapping("/director/{directorId}")
+    public List<Film> getFilmsByDirector(@PathVariable int directorId, @RequestParam String sortBy) {
+        log.info("Requested films by director id {}, sort by {}", directorId, sortBy);
+        return filmService.getTopByDirector(directorId, sortBy);
     }
 
     @PostMapping
