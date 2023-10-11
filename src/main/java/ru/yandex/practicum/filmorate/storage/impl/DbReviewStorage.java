@@ -47,7 +47,6 @@ public class DbReviewStorage implements ReviewStorage {
 
         review.setReviewId(Objects.requireNonNull(keyHolder.getKey()).longValue());
         feedStorage.addReview(review.getUserId(), review.getReviewId());
-
         return review;
     }
 
