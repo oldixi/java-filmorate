@@ -50,8 +50,6 @@ public class DbReviewStorage implements ReviewStorage {
                         "where id = ?",
                 review.getContent(),
                 review.getIsPositive(),
-//                review.getUserId(),
-//                review.getFilmId(),
                 review.getReviewId());
 
         if (response == 0) {
