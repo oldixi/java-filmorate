@@ -41,8 +41,8 @@ public class DbReviewStorage implements ReviewStorage {
             return stmt;
         }, keyHolder);
         if (keyHolder.getKey() != null) {
-            log.info(String.format("Добавлен отзыв %d от пользователя %d фильму %d.",
-                    Objects.requireNonNull(keyHolder.getKey()).longValue(), review.getUserId(), review.getFilmId()));
+            log.info("Добавлен отзыв {} от пользователя {} фильму {}.",
+                    Objects.requireNonNull(keyHolder.getKey()).longValue(), review.getUserId(), review.getFilmId());
         }
         review.setReviewId(Objects.requireNonNull(keyHolder.getKey()).longValue());
         feedStorage.addReview(review.getUserId(), review.getReviewId());

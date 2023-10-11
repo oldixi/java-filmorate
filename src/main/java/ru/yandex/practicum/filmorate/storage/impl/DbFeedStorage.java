@@ -22,7 +22,7 @@ import java.util.Objects;
 @RequiredArgsConstructor
 @Slf4j
 public class DbFeedStorage implements FeedStorage {
-    private static String INSERT_SQL =
+    private static final String INSERT_SQL =
             "insert into events(timestamp, operation, event_type, user_id, entity_id) values(?, ?, ?, ?, ?)";
     private final JdbcTemplate jdbcTemplate;
     private final UserStorage userStorage;
@@ -41,8 +41,8 @@ public class DbFeedStorage implements FeedStorage {
             return stmt;
         }, keyHolder);
         if (keyHolder.getKey() != null) {
-            log.info(String.format("Произошло событие %d %s.%s для пользователя %d с объектом %d.",
-                    Objects.requireNonNull(keyHolder.getKey()).longValue(), operation, eventType, userId, entityId));
+            log.info("Произошло событие {} {}.{} для пользователя {} с объектом {}.",
+                    Objects.requireNonNull(keyHolder.getKey()).longValue(), operation, eventType, userId, entityId);
         }
         log.info("addFeed.Finish");
     }
