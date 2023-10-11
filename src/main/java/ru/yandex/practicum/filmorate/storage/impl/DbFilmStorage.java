@@ -137,6 +137,7 @@ public class DbFilmStorage implements FilmStorage {
                 "where fl.user_id in (?, ?) " +
                 "group by f.id " +
                 "having cnt > 1", this::mapper, userId, friendId);
+    }
 
     @Override
     public List<Film> getTopByDirector(int id, String sortBy) {
