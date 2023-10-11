@@ -7,6 +7,7 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.exception.WrongFilmIdException;
 import ru.yandex.practicum.filmorate.exception.WrongUserIdException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.LikeStorage;
@@ -22,6 +23,7 @@ public class FilmService {
     private final FilmStorage filmStorage;
     private final LikeStorage likeStorage;
     private final GenreStorage genreStorage;
+    private final DirectorStorage directorStorage;
 
     public Film addFilm(Film film) {
         if (isNotValid(film)) {
@@ -73,15 +75,11 @@ public class FilmService {
             throw new WrongFilmIdException("Param must be more then 0");
         }
 
-        Film film = filmStorage.getById(filmId);
-        film.setGenres(genreStorage.getByFilmId(filmId));
-        return film;
+        return filmStorage.getById(filmId);
     }
 
     public List<Film> getAllFilms() {
-        List<Film> films = filmStorage.getAllFilms();
-        films.forEach(film -> film.setGenres(genreStorage.getByFilmId(film.getId())));
-        return films;
+        return filmStorage.getAllFilms();
     }
 
     public List<Film> getTopFilms(long count) {
@@ -89,9 +87,12 @@ public class FilmService {
             throw new WrongFilmIdException("Param must be more then 0");
         }
 
-        List<Film> films = filmStorage.getPopular(count);
-        films.forEach(film -> film.setGenres(genreStorage.getByFilmId(film.getId())));
-        return films;
+        return filmStorage.getPopular(count);
+    }
+
+    public List<Film> getTopByDirector(int id, String sortBy) {
+        directorStorage.getDirectorById(id);
+        return filmStorage.getTopByDirector(id, sortBy);
     }
 
     private boolean isNotValid(Film film) {

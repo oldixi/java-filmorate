@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.yandex.practicum.filmorate.exception.InvalidPathVariableException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.exception.WrongDirectorIdException;
 import ru.yandex.practicum.filmorate.exception.WrongFilmIdException;
 import ru.yandex.practicum.filmorate.exception.WrongUserIdException;
 
@@ -22,7 +23,7 @@ public class ErrorHandler {
         return Map.of("Error", e.getMessage());
     }
 
-    @ExceptionHandler({WrongUserIdException.class, WrongFilmIdException.class})
+    @ExceptionHandler({WrongUserIdException.class, WrongFilmIdException.class, WrongDirectorIdException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Map<String, String> wrongUserIdException(final Exception e) {
         log.warn("Invalid id {}. Stacktrace {}", e.getMessage(), e.getCause());
