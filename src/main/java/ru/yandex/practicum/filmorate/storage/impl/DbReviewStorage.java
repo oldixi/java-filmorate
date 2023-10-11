@@ -83,10 +83,10 @@ public class DbReviewStorage implements ReviewStorage {
     @Override
     public List<Review> getAllReviews() {
         return jdbcTemplate.query(
-                "select r.*, u.cnt from reviews r left join (select review_id, sum(useful) cnt " +
-                        "from review_like group by review_id) u on r.id = u.review_id order by u.cnt desc",
+                "select r.*, u.cnt from reviews r left join (select review_id, nvl(sum(useful),0) cnt " +
+                        "from review_like group by review_id) u on r.id = u.review_id order by nvl(u.cnt,0) desc",
                 this::mapper
-        ).stream().sorted((r1, r2) -> r2.getUseful() - r1.getUseful()).collect(Collectors.toList());
+        );
     }
 
     //Выводим последние написанные отзывы для фильма
@@ -94,16 +94,16 @@ public class DbReviewStorage implements ReviewStorage {
     public List<Review> getReviewsByFilmId(long filmId, int count) {
 
         return jdbcTemplate.query(
-                "select r.*, u.cnt from reviews r left join (select review_id, sum(useful) cnt " +
+                "select r.*, u.cnt from reviews r left join (select review_id, nvl(sum(useful),0) cnt " +
                         "from review_like group by review_id) u " +
                         "on r.id = u.review_id " +
                         "where r.film_id = ? " +
-                        "order by u.cnt desc " +
+                        "order by nvl(u.cnt,0) desc " +
                         "limit ?",
                 this::mapper,
                 filmId,
                 count
-        ).stream().sorted((r1, r2) -> r2.getUseful() - r1.getUseful()).collect(Collectors.toList());
+        );
     }
 
     private Review mapper(ResultSet resultSet, int rowNum) {
