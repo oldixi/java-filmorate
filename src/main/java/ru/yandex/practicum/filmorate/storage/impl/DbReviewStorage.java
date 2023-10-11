@@ -88,7 +88,7 @@ public class DbReviewStorage implements ReviewStorage {
                 "select r.*, u.cnt from reviews r left join (select review_id, sum(useful) cnt " +
                         "from review_like group by review_id) u on r.id = u.review_id order by u.cnt desc",
                 this::mapper
-        ).stream().sorted((review1, review2) -> review2.getUseful() - review1.getUseful()).collect(Collectors.toList());
+        ).stream().sorted((r1, r2) -> r2.getUseful() - r1.getUseful()).collect(Collectors.toList());
     }
 
     //Выводим последние написанные отзывы для фильма
@@ -100,24 +100,24 @@ public class DbReviewStorage implements ReviewStorage {
                         "from review_like group by review_id) u " +
                         "on r.id = u.review_id " +
                         "where r.film_id = ? " +
-                        //  "order by u.cnt desc " +
+                        "order by u.cnt desc " +
                         "limit ?",
                 this::mapper,
                 filmId,
                 count
-        ).stream().sorted((review1, review2) -> review2.getUseful() - review1.getUseful()).collect(Collectors.toList());
+        ).stream().sorted((r1, r2) -> r2.getUseful() - r1.getUseful()).collect(Collectors.toList());
     }
 
     private Review mapper(ResultSet resultSet, int rowNum) {
         try {
-            Review review = new Review();
-            review.setReviewId(resultSet.getLong("id"));
-            review.setContent(resultSet.getString("content"));
-            review.setIsPositive(resultSet.getBoolean("is_positive"));
-            review.setUserId(resultSet.getLong("user_id"));
-            review.setFilmId(resultSet.getLong("film_id"));
-            review.setUseful(resultSet.getInt("u.cnt"));
-            return review;
+            return Review.builder()
+                    .reviewId(resultSet.getLong("id"))
+                    .content(resultSet.getString("content"))
+                    .isPositive(resultSet.getBoolean("is_positive"))
+                    .userId(resultSet.getLong("user_id"))
+                    .filmId(resultSet.getLong("film_id"))
+                    .useful(resultSet.getInt("u.cnt"))
+                    .build();
         } catch (SQLException e) {
             throw new WrongFilmIdException(e.getMessage());
         }
