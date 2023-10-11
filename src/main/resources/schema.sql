@@ -107,4 +107,3 @@ ALTER TABLE film_director ADD CONSTRAINT fd_director_id FOREIGN KEY(director_id)
 
 ALTER TABLE review_like ADD CONSTRAINT fk_rl_rev_id FOREIGN KEY(review_id) REFERENCES reviews(id) ON DELETE CASCADE;
 ALTER TABLE review_like ADD CONSTRAINT fk_rl_user_id FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE;
-

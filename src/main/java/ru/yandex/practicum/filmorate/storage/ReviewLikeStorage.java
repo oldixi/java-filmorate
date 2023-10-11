@@ -8,4 +8,5 @@ public interface ReviewLikeStorage {
     void deleteLikeOrDislike(long id, long userId);
 
     int getUsability(long id);
+
 }
