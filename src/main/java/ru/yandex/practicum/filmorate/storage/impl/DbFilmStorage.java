@@ -99,14 +99,17 @@ public class DbFilmStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getPopular(long count) {
-        return jdbcTemplate.query("select f.* from films f left join " +
-                        "(select fl.film_id, count(fl.user_id) cnt from film_like fl group by fl.film_id) l " +
-                        "on f.id = l.film_id " +
+    public List<Film> getPopular(int count, int genreId, int year) {
+        return jdbcTemplate.query("select f.* " +
+                        "from films f left join " +
+                        "(select fl.film_id, count(fl.user_id) cnt " +
+                        "from film_like fl group by fl.film_id) l on f.id = l.film_id join " +
+                        "(select fg.film_id " +
+                        "from film_genre fg " +
+                        "where fg.genre_id = decode(?, -9999, fg.genre_id, ?) group by fg.film_id) g on f.id = g.film_id " +
+                        "where year(f.release_date) = decode(?, -9999, year(f.release_date), ?) " +
                         "order by l.cnt desc " +
-                        "limit ?",
-                this::mapper,
-                count);
+                        "limit ?", this::mapper, genreId, genreId, year, year, count);
     }
 
     @Override

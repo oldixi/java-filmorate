@@ -84,12 +84,12 @@ public class FilmService {
         return films;
     }
 
-    public List<Film> getTopFilms(long count) {
+    public List<Film> getTopFilms(int count, int genreId, int year) {
         if (isIncorrectId(count)) {
             throw new WrongFilmIdException("Param must be more then 0");
         }
 
-        List<Film> films = filmStorage.getPopular(count);
+        List<Film> films = filmStorage.getPopular(count, genreId, year);
         films.forEach(film -> film.setGenres(genreStorage.getByFilmId(film.getId())));
         return films;
     }

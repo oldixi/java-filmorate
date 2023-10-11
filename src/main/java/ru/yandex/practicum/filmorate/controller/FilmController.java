@@ -38,9 +38,11 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public List<Film> getPopularFilms(@RequestParam(defaultValue = "10") int count) {
+    public List<Film> getPopularFilms(@RequestParam(defaultValue = "10") int count,
+                                      @RequestParam(defaultValue = "-9999") int genreId,
+                                      @RequestParam(defaultValue = "-9999") int year) {
         log.info("Requested most popular {} films", count);
-        return filmService.getTopFilms(count);
+        return filmService.getTopFilms(count, genreId, year);
     }
 
     @PostMapping
@@ -69,7 +71,7 @@ public class FilmController {
     }
 
     @GetMapping("/common")
-    public List<Film> getCommonFilms(@RequestParam int userId, @RequestParam int friendId) {
+    public List<Film> getCommonFilms(@RequestParam long userId, @RequestParam long friendId) {
         log.info("Requested common films of user {} with his friend {}", userId, friendId);
         return filmService.getCommonFilms(userId, friendId);
     }
