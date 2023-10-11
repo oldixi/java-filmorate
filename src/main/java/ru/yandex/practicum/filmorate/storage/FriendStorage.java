@@ -7,5 +7,7 @@ public interface FriendStorage {
 
     void deleteFriend(long userId, long friendId);
 
+    void acceptFriendRequest(long userId, long friendId);
+
     Set<Long> getFriendsByUserId(long id);
 }
