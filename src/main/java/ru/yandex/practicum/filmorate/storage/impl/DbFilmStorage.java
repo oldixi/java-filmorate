@@ -9,35 +9,39 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.exception.WrongFilmIdException;
+import ru.yandex.practicum.filmorate.exception.WrongIdException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.storage.DirectorStorage;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.GenreStorage;
-import ru.yandex.practicum.filmorate.storage.MpaStorage;
+import ru.yandex.practicum.filmorate.storage.*;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
 @Slf4j
 public class DbFilmStorage implements FilmStorage {
-
+    private static final LocalDate EARLIEST_FILM_RELEASE = LocalDate.of(1895, 12, 5);
+    private static final int DEFAULT_FILMS_COUNT = 10;
     private final JdbcTemplate jdbcTemplate;
     private final GenreStorage genreStorage;
     private final DirectorStorage directorStorage;
     private final MpaStorage mpaStorage;
+    private final UserStorage userStorage;
 
     @Override
     public Film add(Film film) {
+        if (isNotValid(film)) {
+            throw new ValidationException("Film validation has been failed");
+        }
         KeyHolder keyHolder = new GeneratedKeyHolder();
         String sqlQuery = "insert into films (name, description, release_date, duration, rating) values (?, ?, ?, ?, ?)";
 
@@ -61,12 +65,17 @@ public class DbFilmStorage implements FilmStorage {
             film.setDirectors(film.getDirectors().stream().distinct().collect(Collectors.toList()));
             directorUpdate(film);
         }
-
+        if (keyHolder.getKey() != null) {
+            log.info("Film {} added", Objects.requireNonNull(keyHolder.getKey()).intValue());
+        }
         return getById(film.getId());
     }
 
     @Override
     public Film update(Film film) {
+        if (isNotValid(film)) {
+            throw new ValidationException("Film validation has been failed");
+        }
         int response = jdbcTemplate.update("update films set name = ?, description = ?, release_date = ?, duration = ?, rating = ?" +
                         "where id = ?",
                 film.getName(),
@@ -77,7 +86,7 @@ public class DbFilmStorage implements FilmStorage {
                 film.getId());
 
         if (response == 0) {
-            throw new WrongFilmIdException("No such film in DB with id = " + film.getId() + ". Update failed");
+            throw new WrongIdException("No such film in DB with id = " + film.getId() + ". Update failed");
         }
 
         jdbcTemplate.update("delete from film_genre where film_id = ?", film.getId());
@@ -93,23 +102,28 @@ public class DbFilmStorage implements FilmStorage {
             film.setDirectors(film.getDirectors().stream().distinct().collect(Collectors.toList()));
             directorUpdate(film);
         }
-
+        log.info("Film {} updated", film.getId());
         return getById(film.getId());
     }
 
     @Override
-    public Film delete(Film film) {
-        jdbcTemplate.update("delete from films where id = ?", film.getId());
-        return film;
+    public void delete(Long filmId) {
+        if (isIncorrectId(filmId))  {
+            throw new WrongIdException("Param must be more then 0");
+        }
+        jdbcTemplate.update("delete from films where id = ?", filmId);
     }
 
     @Override
     public Film getById(Long filmId) {
+        if (isIncorrectId(filmId))  {
+            throw new WrongIdException("Param must be more then 0");
+        }
         String sqlQuery = "select id, name, description, release_date, duration, rating from films where id=?";
         try {
             return jdbcTemplate.queryForObject(sqlQuery, this::mapper, filmId);
         } catch (EmptyResultDataAccessException e) {
-            throw new WrongFilmIdException("There is no film in DB with id = " + filmId);
+            throw new WrongIdException("There is no film in DB with id = " + filmId);
         }
     }
 
@@ -122,32 +136,45 @@ public class DbFilmStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getPopular(int count, int genreId, int year) {
-        log.info("Поиск {} самых популярных фильмов по жанру {} за {} год", count, genreId, year);
-        return jdbcTemplate.query("select f.* " +
+    public List<Film> getPopular(int count, Optional<Integer> genreId, Optional<String> year)  {
+        if (count <=0) {
+            count = DEFAULT_FILMS_COUNT;
+        }
+        return jdbcTemplate.query(
+                "select res.id, res.name, res.description, res.release_date, res.duration, res.cnt, res.rating " +
+                "from ( " +
+                "select f.*, l.cnt " +
                 "from films f " +
                 "left join (select fl.film_id, count(fl.user_id) cnt from film_like fl group by fl.film_id) l " +
                 "on f.id = l.film_id " +
-                "left join (select fg.film_id from film_genre fg " +
-                "where fg.genre_id = decode(?, -9999, fg.genre_id, ?) group by fg.film_id) g " +
+                "where ? is null " +
+                "and year(f.release_date) = decode(?, null, year(f.release_date), ?) " +
+                "union " +
+                "select f.*, l.cnt " +
+                "from films f " +
+                "left join (select fl.film_id, count(fl.user_id) cnt from film_like fl group by fl.film_id) l " +
+                "on f.id = l.film_id " +
+                "join (select fg.film_id from film_genre fg where fg.genre_id = nvl(?, fg.genre_id) group by fg.film_id) g " +
                 "on f.id = g.film_id " +
-                "where f.id = decode(?, -9999, f.id, g.film_id) " +
-                "and year(f.release_date) = decode(?, -9999, year(f.release_date), ?) " +
-                "order by l.cnt desc " +
-                "limit ?", this::mapper, genreId, genreId, genreId, year, year, count);
+                "where ? is not null " +
+                "and year(f.release_date) = decode(?, null, year(f.release_date), ?) " +
+                ") res " +
+                "order by res.cnt desc " +
+                "limit ? ", this::mapper,
+                genreId.orElse(null),
+                year.orElse(null),
+                year.orElse(null),
+                genreId.orElse(null),
+                genreId.orElse(null),
+                year.orElse(null),
+                year.orElse(null),
+                count);
     }
 
     @Override
     public List<Film> getCommonFilms(long userId, long friendId) {
-        return jdbcTemplate.query("select f.*, count(1) cnt " +
-                "from films f join film_like fl on f.id = fl.film_id " +
-                "where fl.user_id in (?, ?) " +
-                "group by f.id " +
-                "having cnt > 1", this::mapper, userId, friendId);
-    }
-
-    @Override
-    public List<Film> getCommonFilms(long userId, long friendId) {
+        userStorage.getById(userId);
+        userStorage.getById(friendId);
         return jdbcTemplate.query("select f.*, count(1) cnt " +
                 "from films f join film_like fl on f.id = fl.film_id " +
                 "where fl.user_id in (?, ?) " +
@@ -157,6 +184,7 @@ public class DbFilmStorage implements FilmStorage {
 
     @Override
     public List<Film> getTopByDirector(int id, String sortBy) {
+        directorStorage.getDirectorById(id);
         String sqlRequest = "SELECT f.* FROM films f LEFT JOIN " +
                 "(SELECT fl.film_id, COUNT(fl.user_id) cnt FROM film_like fl GROUP BY fl.film_id) l " +
                 "on f.id = l.film_id " +
@@ -176,7 +204,6 @@ public class DbFilmStorage implements FilmStorage {
     }
 
     private Film mapper(ResultSet resultSet, int rowNum) {
-        log.info("mapper.rowNum = {}", rowNum);
         try {
             Mpa mpa = mpaStorage.getById(resultSet.getInt("rating"));
             List<Genre> genres = genreStorage.getByFilmId(resultSet.getLong("id"));
@@ -193,7 +220,7 @@ public class DbFilmStorage implements FilmStorage {
                     .directors(directors)
                     .build();
         } catch (SQLException e) {
-            throw new WrongFilmIdException("Can't unwrap film from DB response");
+            throw new WrongIdException("Can't unwrap film from DB response");
         }
     }
 
@@ -231,5 +258,13 @@ public class DbFilmStorage implements FilmStorage {
                     }
                 }
         );
+    }
+
+    private boolean isIncorrectId(Long id) {
+        return id == null || id <= 0;
+    }
+
+    private boolean isNotValid(Film film) {
+        return film.getReleaseDate().isBefore(EARLIEST_FILM_RELEASE);
     }
 }

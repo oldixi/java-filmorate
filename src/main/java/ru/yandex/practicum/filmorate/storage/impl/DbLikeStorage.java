@@ -22,7 +22,6 @@ public class DbLikeStorage implements LikeStorage {
         String sql = "insert into film_like(user_id, film_id) values(?, ?)";
         jdbcTemplate.update(sql, userId, filmId);
         feedStorage.addLike(userId, filmId);
-        log.info("Добавлен новый лайк от пользователя {} фильму {}", userId, filmId);
     }
 
     @Override
@@ -30,12 +29,10 @@ public class DbLikeStorage implements LikeStorage {
         String sql = "delete film_like where user_id = ? and film_id = ?";
         jdbcTemplate.update(sql, userId, filmId);
         feedStorage.deleteLike(userId, filmId);
-        log.info("Удален лайк от пользователя {} фильму {}", userId, filmId);
     }
 
     @Override
     public Set<Long> getLikesByFilmId(Long filmId) {
-
         return new HashSet<>(jdbcTemplate.query(
                 "select user_id from film_like where film_id = ?",
                 (resultSetLike, rowNumLike) -> resultSetLike.getLong("film_like.user_id"),
