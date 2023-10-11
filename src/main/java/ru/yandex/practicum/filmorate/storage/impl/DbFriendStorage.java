@@ -43,8 +43,8 @@ public class DbFriendStorage implements FriendStorage {
     @Override
     public Set<Long> getFriendsByUserId(long id) {
         return new HashSet<>(jdbcTemplate.query(
-                    "select friend_id from friends where user_id = ?",
-                    (resultSetLike, rowNumLike) -> resultSetLike.getLong("friends.friend_id"),
-                    id));
+                "select friend_id from friends where user_id = ?",
+                (resultSetLike, rowNumLike) -> resultSetLike.getLong("friends.friend_id"),
+                id));
     }
 }
