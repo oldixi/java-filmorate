@@ -18,33 +18,27 @@ public class DbFriendStorage implements FriendStorage {
     @Override
     public void addFriend(long userId, long friendId) {
         jdbcTemplate.update(
-                "insert into friends (user_id, friend_id) values (?, ?)",
-                userId,
-                friendId);
+                "insert into friends (user_id, friend_id) values (?, ?)", userId, friendId);
         feedStorage.addFriendRequest(userId, friendId);
     }
 
     @Override
     public void deleteFriend(long userId, long friendId) {
         jdbcTemplate.update(
-                "delete from friends where user_id = ? and friend_id = ?",
-                userId,
-                friendId);
+                "delete from friends where user_id = ? and friend_id = ?", userId, friendId);
         feedStorage.deleteFriendRequest(userId, friendId);
     }
 
     @Override
     public void acceptFriendRequest(long userId, long friendId) {
-        jdbcTemplate.update("update friends set status = true where user_id = ? and friend_id = ?",
-                userId, friendId );
+        jdbcTemplate.update("update friends set status = true where user_id = ? and friend_id = ?", userId, friendId);
         feedStorage.acceptFriendRequest(userId, friendId);
     }
 
     @Override
     public Set<Long> getFriendsByUserId(long id) {
         return new HashSet<>(jdbcTemplate.query(
-                    "select friend_id from friends where user_id = ?",
-                    (resultSetLike, rowNumLike) -> resultSetLike.getLong("friends.friend_id"),
-                    id));
+                "select friend_id from friends where user_id = ?",
+                (resultSetLike, rowNumLike) -> resultSetLike.getLong("friends.friend_id"), id));
     }
 }

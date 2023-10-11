@@ -18,7 +18,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class FilmService {
-    private static final LocalDate EARLIESTFILMRELEASE = LocalDate.of(1895, 12, 5);
+    private static final LocalDate EARLIEST_FILM_RELEASE = LocalDate.of(1895, 12, 5);
     private final FilmStorage filmStorage;
     private final LikeStorage likeStorage;
     private final GenreStorage genreStorage;
@@ -94,8 +94,18 @@ public class FilmService {
         return films;
     }
 
+    public List<Film> getCommonFilms(long userId, long friendId) {
+        if (isIncorrectId(userId) || isIncorrectId(friendId)) {
+            throw new WrongFilmIdException("Param must be more then 0");
+        }
+
+        List<Film> films = filmStorage.getCommonFilms(userId, friendId);
+        films.forEach(film -> film.setGenres(genreStorage.getByFilmId(film.getId())));
+        return films;
+    }
+
     private boolean isNotValid(Film film) {
-        return film.getReleaseDate().isBefore(EARLIESTFILMRELEASE);
+        return film.getReleaseDate().isBefore(EARLIEST_FILM_RELEASE);
     }
 
     private boolean isIncorrectId(long id) {

@@ -9,7 +9,6 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.WrongFilmIdException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
@@ -108,6 +107,15 @@ public class DbFilmStorage implements FilmStorage {
                         "limit ?",
                 this::mapper,
                 count);
+    }
+
+    @Override
+    public List<Film> getCommonFilms(long userId, long friendId) {
+        return jdbcTemplate.query("select f.*, count(1) cnt " +
+                "from films f join film_like fl on f.id = fl.film_id " +
+                "where fl.user_id in (?, ?) " +
+                "group by f.id " +
+                "having cnt > 1", this::mapper, userId, friendId);
     }
 
     private Film mapper(ResultSet resultSet, int rowNum) {

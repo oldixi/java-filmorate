@@ -25,7 +25,7 @@ import java.util.List;
 public class FilmController {
     private final FilmService filmService;
 
-    @GetMapping("")
+    @GetMapping
     public List<Film> getAllFilms() throws SQLException {
         log.info("Get list of films.");
         return filmService.getAllFilms();
@@ -43,7 +43,7 @@ public class FilmController {
         return filmService.getTopFilms(count);
     }
 
-    @PostMapping("")
+    @PostMapping
     public Film post(@Valid @RequestBody Film film) {
         log.info("Requested add film {}", film);
         return filmService.addFilm(film);
@@ -56,7 +56,7 @@ public class FilmController {
         return filmService.getFilmById(id);
     }
 
-    @PutMapping("")
+    @PutMapping
     public Film update(@Valid @RequestBody Film film) {
         log.info("Requested update film {}", film);
         return filmService.update(film);
@@ -66,6 +66,12 @@ public class FilmController {
     public void deleteLike(@PathVariable long id, @PathVariable long userId) {
         log.info("Requested delete like to film {} from user {}", id, userId);
         filmService.deleteLike(userId, id);
+    }
+
+    @GetMapping("/common")
+    public List<Film> getCommonFilms(@RequestParam int userId, @RequestParam int friendId) {
+        log.info("Requested common films of user {} with his friend {}", userId, friendId);
+        return filmService.getCommonFilms(userId, friendId);
     }
 
 }
