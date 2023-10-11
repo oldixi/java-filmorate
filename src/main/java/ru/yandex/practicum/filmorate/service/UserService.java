@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class UserService {
-    private static final int DEFAULT_VALUE_FOR_TOP_FILMS = 10;
     private final UserStorage userStorage;
     private final FriendStorage friendStorage;
     private final LikeStorage likeStorage;
