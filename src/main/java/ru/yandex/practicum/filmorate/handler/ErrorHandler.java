@@ -15,7 +15,7 @@ import java.util.Map;
 @Slf4j
 @RestControllerAdvice("ru.yandex.practicum.filmorate.controller")
 public class ErrorHandler {
-    @ExceptionHandler({InvalidPathVariableException.class, ValidationException.class})
+    @ExceptionHandler({InvalidPathVariableException.class, ValidationException.class, })
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> invalidPathVariableException(final Exception e) {
         log.warn("Invalid variable or data validation {}. Stacktrace {}", e.getMessage(), e.getCause());
