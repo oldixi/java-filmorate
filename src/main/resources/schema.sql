@@ -74,5 +74,5 @@ ALTER TABLE friends ADD CONSTRAINT fk_friend_id FOREIGN KEY(friend_id) REFERENCE
 ALTER TABLE film_feedback ADD CONSTRAINT fk_film_fb_id FOREIGN KEY(film_id) REFERENCES films(id);
 ALTER TABLE film_feedback ADD CONSTRAINT fk_user_fb_id FOREIGN KEY(user_id) REFERENCES users(id);
 
-ALTER TABLE film_director ADD CONSTRAINT fd_film_id FOREIGN KEY(film_id) REFERENCES films(id);
-ALTER TABLE film_director ADD CONSTRAINT fd_director_id FOREIGN KEY(director_id) REFERENCES directors(id);
+ALTER TABLE film_director ADD CONSTRAINT fd_film_id FOREIGN KEY(film_id) REFERENCES films(id) ON DELETE CASCADE;
+ALTER TABLE film_director ADD CONSTRAINT fd_director_id FOREIGN KEY(director_id) REFERENCES directors(id) ON DELETE CASCADE;

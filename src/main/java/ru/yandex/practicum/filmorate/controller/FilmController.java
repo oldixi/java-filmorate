@@ -49,7 +49,7 @@ public class FilmController {
         return filmService.getTopByDirector(directorId, sortBy);
     }
 
-    @PostMapping("")
+    @PostMapping
     public Film post(@Valid @RequestBody Film film) {
         log.info("Requested add film {}", film);
         return filmService.addFilm(film);

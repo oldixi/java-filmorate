@@ -31,10 +31,7 @@ public class FilmService {
         }
 
         log.info("Film added {}.", film);
-        Film film1 = filmStorage.add(film);
-        film1.setGenres(genreStorage.getByFilmId(film1.getId()));
-        film1.setDirectors(directorStorage.getByFilmId(film1.getId()));
-        return film1;
+        return filmStorage.add(film);
     }
 
     public Film update(Film film) {
@@ -44,10 +41,7 @@ public class FilmService {
         }
 
         log.info("Film updated {}", film);
-        Film film1 = filmStorage.update(film);
-        film1.setGenres(genreStorage.getByFilmId(film1.getId()));
-        film1.setDirectors(directorStorage.getByFilmId(film1.getId()));
-        return film1;
+        return filmStorage.update(film);
     }
 
     public void addLike(long userId, long filmId) {
@@ -81,17 +75,11 @@ public class FilmService {
             throw new WrongFilmIdException("Param must be more then 0");
         }
 
-        Film film = filmStorage.getById(filmId);
-        film.setGenres(genreStorage.getByFilmId(filmId));
-        film.setDirectors(directorStorage.getByFilmId(filmId));
-        return film;
+        return filmStorage.getById(filmId);
     }
 
     public List<Film> getAllFilms() {
-        List<Film> films = filmStorage.getAllFilms();
-        films.forEach(film -> film.setGenres(genreStorage.getByFilmId(film.getId())));
-        films.forEach(film -> film.setDirectors(directorStorage.getByFilmId(film.getId())));
-        return films;
+        return filmStorage.getAllFilms();
     }
 
     public List<Film> getTopFilms(long count) {
@@ -99,18 +87,12 @@ public class FilmService {
             throw new WrongFilmIdException("Param must be more then 0");
         }
 
-        List<Film> films = filmStorage.getPopular(count);
-        films.forEach(film -> film.setGenres(genreStorage.getByFilmId(film.getId())));
-        films.forEach(film -> film.setDirectors(directorStorage.getByFilmId(film.getId())));
-        return films;
+        return filmStorage.getPopular(count);
     }
 
     public List<Film> getTopByDirector(int id, String sortBy) {
         directorStorage.getDirectorById(id);
-        List<Film> films = filmStorage.getTopByDirector(id, sortBy);
-        films.forEach(film -> film.setGenres(genreStorage.getByFilmId(film.getId())));
-        films.forEach(film -> film.setDirectors(directorStorage.getByFilmId(film.getId())));
-        return films;
+        return filmStorage.getTopByDirector(id, sortBy);
     }
 
     private boolean isNotValid(Film film) {

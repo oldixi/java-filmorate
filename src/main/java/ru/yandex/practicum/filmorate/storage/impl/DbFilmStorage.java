@@ -9,9 +9,14 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.exception.WrongFilmIdException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.GenreStorage;
+import ru.yandex.practicum.filmorate.storage.MpaStorage;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -25,6 +30,9 @@ import java.util.stream.Collectors;
 public class DbFilmStorage implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
+    private final GenreStorage genreStorage;
+    private final DirectorStorage directorStorage;
+    private final MpaStorage mpaStorage;
 
     @Override
     public Film add(Film film) {
@@ -52,7 +60,7 @@ public class DbFilmStorage implements FilmStorage {
             directorUpdate(film);
         }
 
-        return film;
+        return getById(film.getId());
     }
 
     @Override
@@ -84,7 +92,7 @@ public class DbFilmStorage implements FilmStorage {
             directorUpdate(film);
         }
 
-        return film;
+        return getById(film.getId());
     }
 
     @Override
@@ -144,14 +152,9 @@ public class DbFilmStorage implements FilmStorage {
 
     private Film mapper(ResultSet resultSet, int rowNum) {
         try {
-            Mpa mpa = jdbcTemplate.queryForObject(
-                    "select id, name from ratings where id = ?",
-                    (resultSetMpa, rowNumMpa) -> {
-                        Mpa mpa1 = new Mpa();
-                        mpa1.setId(resultSetMpa.getInt("ratings.id"));
-                        mpa1.setName(resultSetMpa.getString("ratings.name"));
-                        return mpa1;
-                    }, resultSet.getInt(6));
+            Mpa mpa = mpaStorage.getById(resultSet.getInt("films.rating"));
+            List<Genre> genres = genreStorage.getByFilmId(resultSet.getLong("films.id"));
+            List<Director> directors = directorStorage.getByFilmId(resultSet.getLong("films.id"));
 
             return Film.builder()
                     .id(resultSet.getLong("films.id"))
@@ -160,6 +163,8 @@ public class DbFilmStorage implements FilmStorage {
                     .releaseDate(resultSet.getDate("films.release_date").toLocalDate())
                     .duration(resultSet.getInt("films.duration"))
                     .mpa(mpa)
+                    .genres(genres)
+                    .directors(directors)
                     .build();
         } catch (SQLException e) {
             throw new WrongFilmIdException("Can't unwrap film from DB response");

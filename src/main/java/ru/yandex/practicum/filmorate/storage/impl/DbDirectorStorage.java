@@ -46,7 +46,7 @@ public class DbDirectorStorage implements DirectorStorage {
     }
 
     @Override
-    public List<Director> getDirectors() {
+    public List<Director> getAllDirectors() {
         return jdbcTemplate.query("SELECT * FROM directors",
                 (rs, RowNum) -> new Director(rs.getInt("id"), rs.getString("name")));
     }
@@ -67,7 +67,6 @@ public class DbDirectorStorage implements DirectorStorage {
 
     @Override
     public long deleteDirector(long id) {
-        jdbcTemplate.update("DELETE FROM film_director WHERE director_id = ?", id);
         jdbcTemplate.update("DELETE FROM directors WHERE id = ?", id);
         return id;
     }
@@ -82,8 +81,7 @@ public class DbDirectorStorage implements DirectorStorage {
 
     private Director mapper(ResultSet resultSet) throws SQLException {
         try {
-            Director director = new Director(resultSet.getInt("id"), resultSet.getString("name"));
-            return director;
+            return new Director(resultSet.getInt("id"), resultSet.getString("name"));
         } catch (SQLException e) {
             throw new WrongFilmIdException("Can't unwrap director from DB response");
         }

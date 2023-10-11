@@ -17,7 +17,7 @@ public class DirectorService {
     }
 
     public List<Director> getDirectors() {
-        return directorStorage.getDirectors();
+        return directorStorage.getAllDirectors();
     }
 
     public Director addDirector(Director director) {
