@@ -131,6 +131,15 @@ public class DbFilmStorage implements FilmStorage {
     }
 
     @Override
+    public List<Film> getCommonFilms(long userId, long friendId) {
+        return jdbcTemplate.query("select f.*, count(1) cnt " +
+                "from films f join film_like fl on f.id = fl.film_id " +
+                "where fl.user_id in (?, ?) " +
+                "group by f.id " +
+                "having cnt > 1", this::mapper, userId, friendId);
+    }
+
+    @Override
     public List<Film> getTopByDirector(int id, String sortBy) {
         String sqlRequest = "SELECT f.* FROM films f LEFT JOIN " +
                 "(SELECT fl.film_id, COUNT(fl.user_id) cnt FROM film_like fl GROUP BY fl.film_id) l " +

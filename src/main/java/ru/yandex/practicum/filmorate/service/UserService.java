@@ -5,7 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.exception.WrongUserIdException;
+import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.FriendStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -19,6 +21,7 @@ import java.util.stream.Collectors;
 public class UserService {
     private final UserStorage userStorage;
     private final FriendStorage friendStorage;
+    private final FeedStorage feedStorage;
 
     public User create(User user) {
 
@@ -69,12 +72,27 @@ public class UserService {
         friendStorage.deleteFriend(userId, friendId);
     }
 
+    public void updateFriendRequest(long userId, long friendId) {
+        if (isIncorrectId(userId) || isIncorrectId(friendId)) {
+            throw new WrongUserIdException("Param must be more then 0");
+        }
+
+        friendStorage.acceptFriendRequest(userId, friendId);
+    }
+
     public List<User> findCommonFriends(long userId, long otherId) {
         if (isIncorrectId(userId) || isIncorrectId(otherId)) {
             throw new WrongUserIdException("Param must be more then 0");
         }
 
         return userStorage.getCommonFriendsByUserId(userId, otherId);
+    }
+
+    public List<Feed> getEventsList(long userId) {
+        if (isIncorrectId(userId)) {
+            throw new WrongUserIdException("Param must be more then 0");
+        }
+        return feedStorage.getFeedList(userId);
     }
 
     public User getById(long userId) {

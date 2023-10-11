@@ -95,6 +95,16 @@ public class FilmService {
         return filmStorage.getTopByDirector(id, sortBy);
     }
 
+    public List<Film> getCommonFilms(long userId, long friendId) {
+        if (isIncorrectId(userId) || isIncorrectId(friendId)) {
+            throw new WrongFilmIdException("Param must be more then 0");
+        }
+
+        List<Film> films = filmStorage.getCommonFilms(userId, friendId);
+        films.forEach(film -> film.setGenres(genreStorage.getByFilmId(film.getId())));
+        return films;
+    }
+
     private boolean isNotValid(Film film) {
         return film.getReleaseDate().isBefore(EARLIEST_FILM_RELEASE);
     }

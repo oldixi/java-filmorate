@@ -9,6 +9,7 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.WrongFilmIdException;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.storage.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 
 import java.sql.PreparedStatement;
@@ -23,6 +24,7 @@ import java.util.Objects;
 public class DbReviewStorage implements ReviewStorage {
 
     private final JdbcTemplate jdbcTemplate;
+    private final FeedStorage feedStorage;
 
     @Override
     public Review addReview(Review review) {
@@ -37,7 +39,14 @@ public class DbReviewStorage implements ReviewStorage {
             stmt.setLong(4, review.getFilmId());
             return stmt;
         }, keyHolder);
+
+        if (keyHolder.getKey() != null) {
+            log.info("Добавлен отзыв {} от пользователя {} фильму {}.",
+                    Objects.requireNonNull(keyHolder.getKey()).longValue(), review.getUserId(), review.getFilmId());
+        }
+
         review.setReviewId(Objects.requireNonNull(keyHolder.getKey()).longValue());
+        feedStorage.addReview(review.getUserId(), review.getReviewId());
 
         return review;
     }
@@ -45,17 +54,18 @@ public class DbReviewStorage implements ReviewStorage {
     @Override
     public Review updateReview(Review review) {
 
-        int response = jdbcTemplate.update("update reviews set content = ?, is_positive = ? " +
-                        "where id = ?",
+        int response = jdbcTemplate.update("update reviews set content = ?, is_positive = ? where id = ?",
                 review.getContent(),
-                review.getIsPositive(),
+                review.isIsPositive(),
                 review.getReviewId());
 
         if (response == 0) {
             throw new WrongFilmIdException("No such review in DB with id = " + review.getReviewId() + ". Update failed");
         }
 
-        return getReviewById(review.getReviewId());
+        Review reviewUpdated = getReviewById(review.getReviewId());
+        feedStorage.updateReview(reviewUpdated.getUserId(), review.getReviewId());
+        return reviewUpdated;
     }
 
     @Override
@@ -64,7 +74,9 @@ public class DbReviewStorage implements ReviewStorage {
             throw new WrongFilmIdException("Id must be more than 0");
         }
 
+        Review review = getReviewById(id);
         jdbcTemplate.update("delete from reviews where id = ?", id);
+        feedStorage.deleteReview(review.getUserId(), id);
     }
 
     @Override
@@ -124,3 +136,4 @@ public class DbReviewStorage implements ReviewStorage {
         return id <= 0;
     }
 }
+

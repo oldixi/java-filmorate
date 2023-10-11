@@ -37,18 +37,16 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public List<Film> getPopularFilms(@RequestParam(defaultValue = "10") long count) {
+    public List<Film> getPopularFilms(@RequestParam(defaultValue = "10") int count) {
         log.info("Requested most popular {} films", count);
         return filmService.getTopFilms(count);
     }
-
 
     @GetMapping("/director/{directorId}")
     public List<Film> getFilmsByDirector(@PathVariable int directorId, @RequestParam String sortBy) {
         log.info("Requested films by director id {}, sort by {}", directorId, sortBy);
         return filmService.getTopByDirector(directorId, sortBy);
     }
-
 
     @PostMapping
     public Film post(@Valid @RequestBody Film film) {
@@ -74,4 +72,11 @@ public class FilmController {
         log.info("Requested delete like to film {} from user {}", id, userId);
         filmService.deleteLike(userId, id);
     }
+
+    @GetMapping("/common")
+    public List<Film> getCommonFilms(@RequestParam int userId, @RequestParam int friendId) {
+        log.info("Requested common films of user {} with his friend {}", userId, friendId);
+        return filmService.getCommonFilms(userId, friendId);
+    }
+
 }
