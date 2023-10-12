@@ -112,15 +112,14 @@ public class DbFilmStorage implements FilmStorage {
 
     @Override
     public void delete(Long filmId) {
-        if (isIncorrectId(filmId))  {
+        if (isIncorrectId(filmId)) {
             throw new WrongIdException("Param must be more then 0");
         }
-        jdbcTemplate.update("delete from films where id = ?", filmId);
     }
 
     @Override
     public Film getById(Long filmId) {
-        if (isIncorrectId(filmId))  {
+        if (isIncorrectId(filmId)) {
             throw new WrongIdException("Param must be more then 0");
         }
         String sqlQuery = "select id, name, description, release_date, duration, rating from films where id=?";
@@ -205,6 +204,36 @@ public class DbFilmStorage implements FilmStorage {
         }
 
         return jdbcTemplate.query(sqlRequest, this::mapper, id);
+    }
+
+    @Override
+    public List<Film> searchFilms(String query, String by) {
+        query = "%" + query + "%";
+        String sqlRequest = "SELECT f.* FROM films f " +
+                "LEFT JOIN (SELECT fl.film_id, COUNT(fl.user_id) cnt FROM film_like fl GROUP BY fl.film_id) l " +
+                "on f.id = l.film_id ";
+        switch (by) {
+            case "title":
+                sqlRequest = sqlRequest + "WHERE lower(f.name) LIKE lower(?) ORDER BY cnt DESC";
+                return jdbcTemplate.query(sqlRequest, this::mapper, query);
+            case "director":
+                sqlRequest = "SELECT * FROM directors d " +
+                        "JOIN film_director fd ON d.id = fd.director_id " +
+                        "JOIN films f ON fd.film_id = f.id " +
+                        "LEFT JOIN (SELECT fl.film_id, COUNT(fl.user_id) cnt FROM film_like fl GROUP BY fl.film_id) l " +
+                        "on f.id = l.film_id " +
+                        "WHERE lower(d.name) LIKE lower(?) " +
+                        "ORDER BY cnt DESC";
+                return jdbcTemplate.query(sqlRequest, this::mapper, query);
+            case "title,director":
+            case "director,title":
+                sqlRequest = sqlRequest + "LEFT JOIN (SELECT * FROM directors d JOIN film_director fd " +
+                        "ON d.id=fd.director_id) dn ON f.id=dn.film_id " +
+                        "WHERE lower(dn.name) LIKE lower(?) OR lower(f.name) LIKE lower(?) " +
+                        "ORDER BY cnt DESC";
+                return jdbcTemplate.query(sqlRequest, this::mapper, query, query);
+        }
+        throw new ValidationException("No such sort was found");
     }
 
     private Film mapper(ResultSet resultSet, int rowNum) {

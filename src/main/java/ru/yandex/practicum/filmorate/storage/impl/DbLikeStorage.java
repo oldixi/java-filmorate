@@ -39,4 +39,12 @@ public class DbLikeStorage implements LikeStorage {
                 filmId));
     }
 
+    @Override
+    public Set<Long> getLikesByUserId(Long userId) {
+
+        return new HashSet<>(jdbcTemplate.query(
+                "select film_id from film_like where user_id = ?",
+                (rs, rowNum) -> rs.getLong("film_like.film_id"),
+                userId));
+    }
 }

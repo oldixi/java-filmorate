@@ -55,6 +55,12 @@ public class FilmController {
         return filmService.getTopByDirector(directorId, sortBy);
     }
 
+    @GetMapping("/search")
+    public List<Film> searchFilms(@RequestParam String query, @RequestParam String by) {
+        log.info("Requested films like {}, search in {}", query, by);
+        return filmService.searchFilms(query, by);
+    }
+
     @PostMapping
     public Film post(@Valid @RequestBody Film film) {
         log.info("Requested creation of film {}", film);
@@ -84,6 +90,12 @@ public class FilmController {
     public List<Film> getCommonFilms(@RequestParam long userId, @RequestParam long friendId) {
         log.info("Requested common films of user {} with his friend {}", userId, friendId);
         return filmService.getCommonFilms(userId, friendId);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteFilmById(@PathVariable long id) {
+        log.info("Requested deleting film with id = {}", id);
+        filmService.deleteFilmById(id);
     }
 
 }

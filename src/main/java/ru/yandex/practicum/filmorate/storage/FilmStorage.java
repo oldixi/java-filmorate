@@ -21,4 +21,6 @@ public interface FilmStorage {
     List<Film> getPopular(int count, Optional<Integer> genreId, Optional<String> year) ;
 
     List<Film> getCommonFilms(long userId, long friendId);
+
+    List<Film> searchFilms(String query, String by);
 }
