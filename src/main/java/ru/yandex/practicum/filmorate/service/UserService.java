@@ -2,6 +2,8 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.exception.WrongUserIdException;
@@ -29,6 +31,7 @@ public class UserService {
     private final LikeStorage likeStorage;
     private final FilmStorage filmStorage;
     private final FeedStorage feedStorage;
+    private final JdbcTemplate jdbcTemplate;
 
     public User create(User user) {
 
@@ -127,7 +130,10 @@ public class UserService {
         if (likedFilms.isEmpty()) {
             return new ArrayList<>();
         }
-        for (User anotherUser : userStorage.getAll()) {
+        String sql = "select user_id from film_like group by user_id";
+        SqlRowSet userRows = jdbcTemplate.queryForRowSet(sql);
+        while (userRows.next()) {
+            User anotherUser = userStorage.getById(userRows.getLong("user_id"));
             if (!getCommonFilmLikes(user, anotherUser).isEmpty() && !anotherUser.equals(user)) {
                 commonUsers.add(anotherUser);
             }
