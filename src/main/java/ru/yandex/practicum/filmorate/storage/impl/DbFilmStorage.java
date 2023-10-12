@@ -14,7 +14,10 @@ import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.storage.*;
+import ru.yandex.practicum.filmorate.storage.DirectorStorage;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.GenreStorage;
+import ru.yandex.practicum.filmorate.storage.MpaStorage;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -123,7 +126,7 @@ public class DbFilmStorage implements FilmStorage {
         try {
             return jdbcTemplate.queryForObject(sqlQuery, this::mapper, filmId);
         } catch (EmptyResultDataAccessException e) {
-            throw new WrongIdException("There is no film in DB with id = " + filmId);
+            throw new WrongFilmIdException("There is no film in DB with id = " + filmId);
         }
     }
 
