@@ -162,27 +162,31 @@ public class DbFilmStorage implements FilmStorage {
     @Override
     public List<Film> searchFilms(String query, String by) {
         query = "%" + query + "%";
-        String sqlRequest = "SELECT f.* FROM films f LEFT JOIN " +
-                "(SELECT fl.film_id, COUNT(fl.user_id) cnt FROM film_like fl GROUP BY fl.film_id) l " +
+        String sqlRequest = "SELECT f.* FROM films f " +
+                "LEFT JOIN (SELECT fl.film_id, COUNT(fl.user_id) cnt FROM film_like fl GROUP BY fl.film_id) l " +
                 "on f.id = l.film_id ";
         switch (by) {
             case "title":
                 sqlRequest = sqlRequest + "WHERE lower(f.name) LIKE lower(?) ORDER BY cnt DESC";
                 return jdbcTemplate.query(sqlRequest, this::mapper, query);
             case "director":
-                sqlRequest = sqlRequest + "LEFT JOIN (SELECT * FROM directors d JOIN film_director fd " +
-                        "ON d.id=fd.director_id) dn ON f.id=dn.film_id " +
-                        "WHERE lower(dn.name) LIKE lower(?) ORDER BY cnt DESC";
+                sqlRequest = "SELECT * FROM directors d " +
+                        "JOIN film_director fd ON d.id = fd.director_id " +
+                        "JOIN films f ON fd.film_id = f.id " +
+                        "LEFT JOIN (SELECT fl.film_id, COUNT(fl.user_id) cnt FROM film_like fl GROUP BY fl.film_id) l " +
+                        "on f.id = l.film_id " +
+                        "WHERE lower(d.name) LIKE lower(?) " +
+                        "ORDER BY cnt DESC";
                 return jdbcTemplate.query(sqlRequest, this::mapper, query);
-            case "director,title":
             case "title,director":
+            case "director,title":
                 sqlRequest = sqlRequest + "LEFT JOIN (SELECT * FROM directors d JOIN film_director fd " +
                         "ON d.id=fd.director_id) dn ON f.id=dn.film_id " +
-                        "WHERE lower(dn.name) LIKE lower(?) OR lower(f.name) LIKE lower(?) ORDER BY cnt DESC";
+                        "WHERE lower(dn.name) LIKE lower(?) OR lower(f.name) LIKE lower(?) " +
+                        "ORDER BY cnt DESC";
                 return jdbcTemplate.query(sqlRequest, this::mapper, query, query);
-            default:
-                throw new ValidationException("No such sort was found");
         }
+        throw new ValidationException("No such sort was found");
     }
 
     private Film mapper(ResultSet resultSet, int rowNum) {

@@ -50,7 +50,7 @@ public class FilmController {
 
     @GetMapping("/search")
     public List<Film> searchFilms(@RequestParam String query, @RequestParam String by) {
-        log.info("Requested films like {}, sorted by {}", query, by);
+        log.info("Requested films like {}, search in {}", query, by);
         return filmService.searchFilms(query, by);
     }
 
