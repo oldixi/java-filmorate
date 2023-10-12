@@ -91,7 +91,6 @@ public class UserController {
         userService.deleteUserById(id);
     }
 
-
     @GetMapping("/{id}/recommendations")
     public List<Film> getRecommendations(@PathVariable long id) {
         log.info("Requested recommendations for user {}", id);
