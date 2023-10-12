@@ -105,6 +105,10 @@ public class FilmService {
         return films;
     }
 
+    public List<Film> searchFilms(String query, String by) {
+        return filmStorage.searchFilms(query, by);
+    }
+
     private boolean isNotValid(Film film) {
         return film.getReleaseDate().isBefore(EARLIEST_FILM_RELEASE);
     }
