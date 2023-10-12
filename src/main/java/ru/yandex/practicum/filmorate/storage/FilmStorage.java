@@ -21,4 +21,5 @@ public interface FilmStorage {
 
     List<Film> getTopByDirector(int id, String sortBy);
 
+    List<Film> searchFilms(String query, String by);
 }
