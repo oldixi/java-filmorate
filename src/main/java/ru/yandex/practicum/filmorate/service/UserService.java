@@ -126,18 +126,23 @@ public class UserService {
         User user = userStorage.getById(id);
         Set<Long> likedFilms = likeStorage.getLikesByUserId(id);
         List<User> commonUsers = new ArrayList<>();
+
         if (likedFilms.isEmpty()) {
             return new ArrayList<>();
         }
+
         String sql = "select user_id from film_like group by user_id";
         List<Long> userIds = jdbcTemplate.query(sql, (rs, rowNum) -> rs.getLong("user_id"));
+
         for (Long userId : userIds) {
             User anotherUser = userStorage.getById(userId);
             if (!getCommonFilmLikes(user, anotherUser).isEmpty() && !anotherUser.equals(user)) {
                 commonUsers.add(anotherUser);
             }
         }
+
         List<Film> recommendedFilms = new ArrayList<>();
+
         for (User u : commonUsers) {
             String sqlLikes = "select film_id from film_like where user_id = ?";
             List<Long> filmIds = jdbcTemplate.query(sqlLikes,
@@ -149,6 +154,7 @@ public class UserService {
                 }
             }
         }
+
         return recommendedFilms;
     }
 
