@@ -112,4 +112,8 @@ public class FilmService {
     private boolean isIncorrectId(long id) {
         return id <= 0;
     }
+
+    public void deleteFilmById(long id) {
+        filmStorage.delete(id);
+    }
 }

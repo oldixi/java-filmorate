@@ -1,8 +1,10 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exception.WrongUserIdException;
 import ru.yandex.practicum.filmorate.storage.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.FriendStorage;
 
@@ -37,6 +39,12 @@ public class DbFriendStorage implements FriendStorage {
 
     @Override
     public Set<Long> getFriendsByUserId(long id) {
+        try {
+            jdbcTemplate.queryForObject("select id from users where id = ?",
+                    Long.class, id);
+        } catch (EmptyResultDataAccessException e) {
+            throw new WrongUserIdException("No user found with id = " + id);
+        }
         return new HashSet<>(jdbcTemplate.query(
                 "select friend_id from friends where user_id = ?",
                 (resultSetLike, rowNumLike) -> resultSetLike.getLong("friends.friend_id"), id));

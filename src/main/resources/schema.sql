@@ -57,7 +57,7 @@ CREATE TABLE events (
     timestamp numeric,
     operation varchar(20),
     event_type varchar(20),
-    user_id integer NOT NULL REFERENCES users (id),
+    user_id integer NOT NULL,
     entity_id integer NOT NULL
 );
 
@@ -107,3 +107,5 @@ ALTER TABLE film_director ADD CONSTRAINT fd_director_id FOREIGN KEY(director_id)
 
 ALTER TABLE review_like ADD CONSTRAINT fk_rl_rev_id FOREIGN KEY(review_id) REFERENCES reviews(id) ON DELETE CASCADE;
 ALTER TABLE review_like ADD CONSTRAINT fk_rl_user_id FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE;
+
+ALTER TABLE events ADD CONSTRAINT fk_ev_user_id FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE;
