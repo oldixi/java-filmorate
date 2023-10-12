@@ -55,9 +55,8 @@ public class DbUserStorage implements UserStorage {
     }
 
     @Override
-    public User delete(User user) {
-        jdbcTemplate.update("delete from users where id = ? cascade", user.getId());
-        return user;
+    public void delete(long userId) {
+        jdbcTemplate.update("delete from users where id = ?", userId);
     }
 
     @Override

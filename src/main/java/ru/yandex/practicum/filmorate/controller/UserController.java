@@ -85,6 +85,12 @@ public class UserController {
         return userService.getEventsList(id);
     }
 
+    @DeleteMapping("/{id}")
+    public void deleteUserById(@PathVariable long id) {
+        log.info("Requested deleting user with id = {}", id);
+        userService.deleteUserById(id);
+    }
+
 
     @GetMapping("/{id}/recommendations")
     public List<Film> getRecommendations(@PathVariable long id) {
