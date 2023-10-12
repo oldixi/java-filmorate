@@ -15,7 +15,6 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,7 +28,7 @@ public class FilmController {
     private final FilmService filmService;
 
     @GetMapping
-    public List<Film> getAllFilms() throws SQLException {
+    public List<Film> getAllFilms() {
         log.info("Requested all films");
         return filmService.getAllFilms();
     }
