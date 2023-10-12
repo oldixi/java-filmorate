@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.exception.WrongUserIdException;
@@ -131,16 +130,20 @@ public class UserService {
             return new ArrayList<>();
         }
         String sql = "select user_id from film_like group by user_id";
-        SqlRowSet userRows = jdbcTemplate.queryForRowSet(sql);
-        while (userRows.next()) {
-            User anotherUser = userStorage.getById(userRows.getLong("user_id"));
+        List<Long> userIds = jdbcTemplate.query(sql, (rs, rowNum) -> rs.getLong("user_id"));
+        for (Long userId : userIds) {
+            User anotherUser = userStorage.getById(userId);
             if (!getCommonFilmLikes(user, anotherUser).isEmpty() && !anotherUser.equals(user)) {
                 commonUsers.add(anotherUser);
             }
         }
         List<Film> recommendedFilms = new ArrayList<>();
         for (User u : commonUsers) {
-            for (long filmId : likeStorage.getLikesByUserId(u.getId())) {
+            String sqlLikes = "select film_id from film_like where user_id = ?";
+            List<Long> filmIds = jdbcTemplate.query(sqlLikes,
+                    (rs, rowNum) -> rs.getLong("film_id"),
+                    u.getId());
+            for (Long filmId : filmIds) {
                 if (!likedFilms.contains(filmId)) {
                     recommendedFilms.add(filmStorage.getById(filmId));
                 }
