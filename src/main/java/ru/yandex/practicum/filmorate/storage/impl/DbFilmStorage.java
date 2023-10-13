@@ -115,6 +115,7 @@ public class DbFilmStorage implements FilmStorage {
         if (isIncorrectId(filmId)) {
             throw new WrongIdException("Param must be more then 0");
         }
+        jdbcTemplate.update("delete from films where id = ?", filmId);
     }
 
     @Override

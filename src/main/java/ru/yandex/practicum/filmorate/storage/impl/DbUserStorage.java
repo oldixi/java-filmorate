@@ -16,8 +16,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 @Repository
 @RequiredArgsConstructor
@@ -100,11 +102,22 @@ public class DbUserStorage implements UserStorage {
 
     @Override
     public List<User> getCommonFriendsByUserId(long userId, long otherId) {
+        getById(userId);
+        getById(otherId);
         String sql = "select u.* " +
                 "from friends fl1 join friends fl2 on fl1.friend_id = fl2.friend_id " +
                 "join users u on fl2.friend_id = u.id " +
                 "where fl1.user_id = ? and fl2.user_id = ?";
         return jdbcTemplate.query(sql, this::mapper, userId, otherId);
+    }
+
+    @Override
+    public List<User> getFriendsByUserId(long userId) {
+        getById(userId);
+        String sql = "select u.* " +
+                "from friends fl join users u on fl.friend_id = u.id " +
+                "where fl.user_id = ?";
+        return jdbcTemplate.query(sql, this::mapper, userId);
     }
 
     private User mapper(ResultSet resultSet, int rowNum) throws SQLException {

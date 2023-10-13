@@ -7,9 +7,6 @@ import ru.yandex.practicum.filmorate.storage.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.FriendStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.HashSet;
-import java.util.Set;
-
 @Repository
 @RequiredArgsConstructor
 public class DbFriendStorage implements FriendStorage {
@@ -41,13 +38,5 @@ public class DbFriendStorage implements FriendStorage {
         userStorage.getById(friendId);
         jdbcTemplate.update("update friends set status = true where user_id = ? and friend_id = ?", userId, friendId);
         feedStorage.acceptFriendRequest(userId, friendId);
-    }
-
-    @Override
-    public Set<Long> getFriendsByUserId(long userId) {
-        userStorage.getById(userId);
-        return new HashSet<>(jdbcTemplate.query(
-                "select friend_id from friends where user_id = ?",
-                (resultSetLike, rowNumLike) -> resultSetLike.getLong("friends.friend_id"), userId));
     }
 }

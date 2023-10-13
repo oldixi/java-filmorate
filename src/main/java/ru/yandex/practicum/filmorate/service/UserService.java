@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Feed;
@@ -10,11 +9,9 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.FriendStorage;
-import ru.yandex.practicum.filmorate.storage.LikeStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -22,10 +19,8 @@ import java.util.stream.Collectors;
 public class UserService {
     private final UserStorage userStorage;
     private final FriendStorage friendStorage;
-    private final LikeStorage likeStorage;
     private final FilmStorage filmStorage;
     private final FeedStorage feedStorage;
-    private final JdbcTemplate jdbcTemplate;
 
     public User create(User user) {
         userStorage.add(user);
@@ -69,9 +64,7 @@ public class UserService {
     }
 
     public List<User> getFriends(long userId) {
-        return friendStorage.getFriendsByUserId(userId).stream()
-                .map(userStorage::getById)
-                .collect(Collectors.toList());
+        return userStorage.getFriendsByUserId(userId);
     }
 
     public List<Film> getRecommendations(long userId) {
