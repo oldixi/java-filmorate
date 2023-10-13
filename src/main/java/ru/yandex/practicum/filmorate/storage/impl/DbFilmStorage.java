@@ -236,6 +236,23 @@ public class DbFilmStorage implements FilmStorage {
         throw new ValidationException("No such sort was found");
     }
 
+    @Override
+    public List<Film> getRecommendations(long userId) {
+        userStorage.getById(userId);
+        return jdbcTemplate.query("select f.* " +
+                        "from " +
+                        "(select fl_other_users.film_id " +
+                        "from film_like fl_other_users " +
+                        "where fl_other_users.user_id <> ? " +
+                        "and fl_other_users.film_id not in (select fl.film_id " +
+                        "FROM film_like fl " +
+                        "where fl.user_id in (?, fl_other_users.user_id) " +
+                        "group by fl.film_id " +
+                        "having count(1) > 1)) recommend_films " +
+                        "join films f on recommend_films.film_id = f.id",
+                this::mapper, userId, userId);
+    }
+
     private Film mapper(ResultSet resultSet, int rowNum) {
         try {
             Mpa mpa = mpaStorage.getById(resultSet.getInt("rating"));

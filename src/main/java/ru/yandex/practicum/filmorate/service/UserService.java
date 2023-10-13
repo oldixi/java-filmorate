@@ -13,9 +13,7 @@ import ru.yandex.practicum.filmorate.storage.FriendStorage;
 import ru.yandex.practicum.filmorate.storage.LikeStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -76,45 +74,7 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
-    public List<Film> getRecommendations(long id) {
-        User user = userStorage.getById(id);
-        Set<Long> likedFilms = likeStorage.getLikesByUserId(id);
-        List<User> commonUsers = new ArrayList<>();
-
-        if (likedFilms.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        String sql = "select user_id from film_like group by user_id";
-        List<Long> userIds = jdbcTemplate.query(sql, (rs, rowNum) -> rs.getLong("user_id"));
-
-        for (Long userId : userIds) {
-            User anotherUser = userStorage.getById(userId);
-            if (!getCommonFilmLikes(user, anotherUser).isEmpty() && !anotherUser.equals(user)) {
-                commonUsers.add(anotherUser);
-            }
-        }
-
-        List<Film> recommendedFilms = new ArrayList<>();
-
-        for (User u : commonUsers) {
-            String sqlLikes = "select film_id from film_like where user_id = ?";
-            List<Long> filmIds = jdbcTemplate.query(sqlLikes,
-                    (rs, rowNum) -> rs.getLong("film_id"),
-                    u.getId());
-            for (Long filmId : filmIds) {
-                if (!likedFilms.contains(filmId)) {
-                    recommendedFilms.add(filmStorage.getById(filmId));
-                }
-            }
-        }
-
-        return recommendedFilms;
-    }
-
-    private Set<Long> getCommonFilmLikes(User user, User anotherUser) {
-        Set<Long> likedFilms = likeStorage.getLikesByUserId(user.getId());
-        likedFilms.retainAll(likeStorage.getLikesByUserId(anotherUser.getId()));
-        return likedFilms;
+    public List<Film> getRecommendations(long userId) {
+        return filmStorage.getRecommendations(userId);
     }
 }
