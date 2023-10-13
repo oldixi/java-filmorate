@@ -140,31 +140,31 @@ public class DbFilmStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getPopular(int count, Optional<Integer> genreId, Optional<String> year)  {
+    public List<Film> getPopular(int count, Optional<Integer> genreId, Optional<String> year) {
         if (count <= 0) {
             count = DEFAULT_FILMS_COUNT;
         }
         return jdbcTemplate.query(
                 "select res.id, res.name, res.description, res.release_date, res.duration, res.cnt, res.rating " +
-                "from ( " +
-                "select f.*, l.cnt " +
-                "from films f " +
-                "left join (select fl.film_id, count(fl.user_id) cnt from film_like fl group by fl.film_id) l " +
-                "on f.id = l.film_id " +
-                "where ? is null " +
-                "and year(f.release_date) = decode(?, null, year(f.release_date), ?) " +
-                "union " +
-                "select f.*, l.cnt " +
-                "from films f " +
-                "left join (select fl.film_id, count(fl.user_id) cnt from film_like fl group by fl.film_id) l " +
-                "on f.id = l.film_id " +
-                "join (select fg.film_id from film_genre fg where fg.genre_id = nvl(?, fg.genre_id) group by fg.film_id) g " +
-                "on f.id = g.film_id " +
-                "where ? is not null " +
-                "and year(f.release_date) = decode(?, null, year(f.release_date), ?) " +
-                ") res " +
-                "order by res.cnt desc " +
-                "limit ? ", this::mapper,
+                        "from ( " +
+                        "select f.*, l.cnt " +
+                        "from films f " +
+                        "left join (select fl.film_id, count(fl.user_id) cnt from film_like fl group by fl.film_id) l " +
+                        "on f.id = l.film_id " +
+                        "where ? is null " +
+                        "and year(f.release_date) = decode(?, null, year(f.release_date), ?) " +
+                        "union " +
+                        "select f.*, l.cnt " +
+                        "from films f " +
+                        "left join (select fl.film_id, count(fl.user_id) cnt from film_like fl group by fl.film_id) l " +
+                        "on f.id = l.film_id " +
+                        "join (select fg.film_id from film_genre fg where fg.genre_id = nvl(?, fg.genre_id) group by fg.film_id) g " +
+                        "on f.id = g.film_id " +
+                        "where ? is not null " +
+                        "and year(f.release_date) = decode(?, null, year(f.release_date), ?) " +
+                        ") res " +
+                        "order by res.cnt desc " +
+                        "limit ? ", this::mapper,
                 genreId.orElse(null),
                 year.orElse(null),
                 year.orElse(null),
@@ -218,7 +218,7 @@ public class DbFilmStorage implements FilmStorage {
                 sqlRequest = sqlRequest + "WHERE lower(f.name) LIKE lower(?) ORDER BY cnt DESC";
                 return jdbcTemplate.query(sqlRequest, this::mapper, query);
             case "director":
-                sqlRequest = "SELECT * FROM directors d " +
+                sqlRequest = "SELECT f.* FROM directors d " +
                         "JOIN film_director fd ON d.id = fd.director_id " +
                         "JOIN films f ON fd.film_id = f.id " +
                         "LEFT JOIN (SELECT fl.film_id, COUNT(fl.user_id) cnt FROM film_like fl GROUP BY fl.film_id) l " +
