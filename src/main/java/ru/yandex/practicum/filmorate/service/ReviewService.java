@@ -36,8 +36,13 @@ public class ReviewService {
         if (!filmService.isLegalFilmId(review.getFilmId()) || !userService.isLegalUserId(review.getUserId())) {
             return review;
         }
+        if (!isLegalReviewId(review.getReviewId())) {
+            return review;
+        }
         Review reviewUpdated = reviewStorage.updateReview(review);
-        feedStorage.updateReview(reviewUpdated.getUserId(), reviewUpdated.getReviewId());
+        if (reviewUpdated != null) {
+            feedStorage.updateReview(reviewUpdated.getUserId(), reviewUpdated.getReviewId());
+        }
         return reviewUpdated;
     }
 
