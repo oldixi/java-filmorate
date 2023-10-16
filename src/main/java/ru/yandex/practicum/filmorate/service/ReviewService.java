@@ -87,7 +87,7 @@ public class ReviewService {
             throw new WrongIdException("No user with id = " + userId + " in DB was found.");
         }
         if (!isLegalReviewId(id)) {
-            throw new WrongIdException("No review with id = " + id+ " in DB was found.");
+            throw new WrongIdException("No review with id = " + id + " in DB was found.");
         }
         reviewLikeStorage.addLike(id, userId);
     }
@@ -97,7 +97,7 @@ public class ReviewService {
             throw new WrongIdException("No user with id = " + userId + " in DB was found.");
         }
         if (!isLegalReviewId(id)) {
-            throw new WrongIdException("No review with id = " + id+ " in DB was found.");
+            throw new WrongIdException("No review with id = " + id + " in DB was found.");
         }
         reviewLikeStorage.addDislike(id, userId);
     }
@@ -107,7 +107,7 @@ public class ReviewService {
             throw new WrongIdException("No user with id = " + userId + " in DB was found.");
         }
         if (!isLegalReviewId(id)) {
-            throw new WrongIdException("No review with id = " + id+ " in DB was found.");
+            throw new WrongIdException("No review with id = " + id + " in DB was found.");
         }
         reviewLikeStorage.deleteLikeOrDislike(id, userId);
     }
