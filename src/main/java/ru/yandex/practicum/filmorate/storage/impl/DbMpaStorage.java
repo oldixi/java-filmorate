@@ -42,4 +42,20 @@ public class DbMpaStorage implements MpaStorage {
             throw new WrongIdException("No such Mpa with id = " + id + " in DB was found");
         }
     }
+
+    @Override
+    public Mpa getMpaByFilmId(long filmId) {
+        try {
+            return jdbcTemplate.queryForObject(
+                    "select r.id, r.name from film f left join ratings r on f.rating = r.id where f.id = ?",
+                    (resultSetMpa, rowNumMpa) -> {
+                        Mpa mpa = new Mpa();
+                        mpa.setId(resultSetMpa.getInt("ratings.id"));
+                        mpa.setName(resultSetMpa.getString("ratings.name"));
+                        return mpa;
+                    }, filmId);
+        } catch (EmptyResultDataAccessException e) {
+            throw new WrongIdException("No such Mpa with film id = " + filmId + " in DB was found");
+        }
+    }
 }

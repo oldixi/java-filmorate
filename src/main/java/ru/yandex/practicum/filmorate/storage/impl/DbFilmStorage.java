@@ -17,13 +17,11 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.MpaStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -33,19 +31,13 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class DbFilmStorage implements FilmStorage {
-    private static final LocalDate EARLIEST_FILM_RELEASE = LocalDate.of(1895, 12, 5);
-    private static final int DEFAULT_FILMS_COUNT = 10;
     private final JdbcTemplate jdbcTemplate;
     private final GenreStorage genreStorage;
     private final DirectorStorage directorStorage;
     private final MpaStorage mpaStorage;
-    private final UserStorage userStorage;
 
     @Override
     public Film add(Film film) {
-        if (isNotValid(film)) {
-            throw new ValidationException("Film validation has been failed");
-        }
         KeyHolder keyHolder = new GeneratedKeyHolder();
         String sqlQuery = "insert into films (name, description, release_date, duration, rating) values (?, ?, ?, ?, ?)";
 
@@ -72,15 +64,12 @@ public class DbFilmStorage implements FilmStorage {
         if (keyHolder.getKey() != null) {
             log.info("Film {} added", Objects.requireNonNull(keyHolder.getKey()).intValue());
         }
-        return getById(film.getId());
+        return film;
     }
 
     @Override
     public Film update(Film film) {
-        if (isNotValid(film)) {
-            throw new ValidationException("Film validation has been failed");
-        }
-        int response = jdbcTemplate.update("update films set name = ?, description = ?, release_date = ?, duration = ?, rating = ?" +
+        jdbcTemplate.update("update films set name = ?, description = ?, release_date = ?, duration = ?, rating = ?" +
                         "where id = ?",
                 film.getName(),
                 film.getDescription(),
@@ -88,10 +77,6 @@ public class DbFilmStorage implements FilmStorage {
                 film.getDuration(),
                 film.getMpa().getId(),
                 film.getId());
-
-        if (response == 0) {
-            throw new WrongIdException("No such film in DB with id = " + film.getId() + ". Update failed");
-        }
 
         jdbcTemplate.update("delete from film_genre where film_id = ?", film.getId());
 
@@ -107,27 +92,21 @@ public class DbFilmStorage implements FilmStorage {
             directorUpdate(film);
         }
         log.info("Film {} updated", film.getId());
-        return getById(film.getId());
+        return getById(film.getId()).orElse(null);
     }
 
     @Override
     public void delete(Long filmId) {
-        if (isIncorrectId(filmId)) {
-            throw new WrongIdException("Param must be more then 0");
-        }
         jdbcTemplate.update("delete from films where id = ?", filmId);
     }
 
     @Override
-    public Film getById(Long filmId) {
-        if (isIncorrectId(filmId)) {
-            throw new WrongIdException("Param must be more then 0");
-        }
-        String sqlQuery = "select id, name, description, release_date, duration, rating from films where id=?";
+    public Optional<Film> getById(Long filmId) {
         try {
-            return jdbcTemplate.queryForObject(sqlQuery, this::mapper, filmId);
+            String sqlQuery = "select id, name, description, release_date, duration, rating from films where id=?";
+            return Optional.ofNullable(jdbcTemplate.queryForObject(sqlQuery, this::mapper, filmId));
         } catch (EmptyResultDataAccessException e) {
-            throw new WrongIdException("There is no film in DB with id = " + filmId);
+            return Optional.empty();
         }
     }
 
@@ -141,9 +120,6 @@ public class DbFilmStorage implements FilmStorage {
 
     @Override
     public List<Film> getPopular(int count, Optional<Integer> genreId, Optional<String> year) {
-        if (count <= 0) {
-            count = DEFAULT_FILMS_COUNT;
-        }
         return jdbcTemplate.query(
                 "select res.id, res.name, res.description, res.release_date, res.duration, res.cnt, res.rating " +
                         "from ( " +
@@ -177,8 +153,6 @@ public class DbFilmStorage implements FilmStorage {
 
     @Override
     public List<Film> getCommonFilms(long userId, long friendId) {
-        userStorage.getById(userId);
-        userStorage.getById(friendId);
         return jdbcTemplate.query("select f.*, count(1) cnt " +
                 "from films f join film_like fl on f.id = fl.film_id " +
                 "where fl.user_id in (?, ?) " +
@@ -239,7 +213,6 @@ public class DbFilmStorage implements FilmStorage {
 
     @Override
     public List<Film> getRecommendations(long userId) {
-        userStorage.getById(userId);
         return jdbcTemplate.query("select f.* " +
                         "from " +
                         "(select fl_other_users.film_id " +
@@ -309,13 +282,5 @@ public class DbFilmStorage implements FilmStorage {
                     }
                 }
         );
-    }
-
-    private boolean isIncorrectId(Long id) {
-        return id == null || id <= 0;
-    }
-
-    private boolean isNotValid(Film film) {
-        return film.getReleaseDate().isBefore(EARLIEST_FILM_RELEASE);
     }
 }

@@ -12,7 +12,7 @@ public interface FilmStorage {
 
     void delete(Long filmId);
 
-    Film getById(Long filmId);
+    Optional<Film> getById(Long filmId);
 
     List<Film> getAllFilms();
 

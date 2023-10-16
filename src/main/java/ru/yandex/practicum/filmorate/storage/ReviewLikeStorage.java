@@ -7,6 +7,6 @@ public interface ReviewLikeStorage {
 
     void deleteLikeOrDislike(long reviewId, long userId);
 
-    int getUsability(long reviewId);
+/*    int getUsability(long reviewId);*/
 
 }

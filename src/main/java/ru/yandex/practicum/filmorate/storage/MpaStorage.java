@@ -8,4 +8,6 @@ public interface MpaStorage {
     List<Mpa> getAll();
 
     Mpa getById(int id);
+
+    Mpa getMpaByFilmId(long filmId);
 }

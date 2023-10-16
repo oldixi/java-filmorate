@@ -16,6 +16,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Slf4j
 @Repository
@@ -24,12 +25,12 @@ public class DbDirectorStorage implements DirectorStorage {
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public Director getDirectorById(int id) {
+    public Optional<Director> getDirectorById(int id) {
         try {
-            return jdbcTemplate.queryForObject("SELECT * FROM directors WHERE id = ?",
-                    (rs, RowNum) -> new Director(rs.getInt("id"), rs.getString("name")), id);
+            return Optional.ofNullable(jdbcTemplate.queryForObject("SELECT * FROM directors WHERE id = ?",
+                    (rs, RowNum) -> new Director(rs.getInt("id"), rs.getString("name")), id));
         } catch (EmptyResultDataAccessException e) {
-            throw new WrongIdException("There is no director in DB with id = " + id);
+        return Optional.empty();
         }
     }
 
@@ -43,8 +44,12 @@ public class DbDirectorStorage implements DirectorStorage {
             statement.setString(1, director.getName());
             return statement;
         }, keyHolder);
-        log.info("Director {} added", Objects.requireNonNull(keyHolder.getKey()).intValue());
-        return getDirectorById(Objects.requireNonNull(keyHolder.getKey()).intValue());
+
+        if (keyHolder.getKey() != null) {
+            log.info("director {} added", Objects.requireNonNull(keyHolder.getKey()).intValue());
+            director.setId(Objects.requireNonNull(keyHolder.getKey()).intValue());
+        }
+        return director;
     }
 
     @Override
@@ -55,33 +60,21 @@ public class DbDirectorStorage implements DirectorStorage {
 
     @Override
     public Director updateDirector(Director director) {
-        int response = jdbcTemplate.update("UPDATE directors SET name = ? WHERE id = ?",
+        jdbcTemplate.update("UPDATE directors SET name = ? WHERE id = ?",
                 director.getName(),
                 director.getId());
-
-        if (response == 0) {
-            throw new WrongIdException("No such director in DB with id = " + director.getId() +
-                    " was found. Update failed");
-        }
-
         log.info("Director {} updated", director.getId());
-        return getDirectorById(director.getId());
+        return getDirectorById(director.getId()).orElse(null);
     }
 
     @Override
     public long deleteDirector(long id) {
-        if (isIncorrectId(id))  {
-            throw new WrongIdException("Param must be more then 0");
-        }
         jdbcTemplate.update("DELETE FROM directors WHERE id = ?", id);
         return id;
     }
 
     @Override
     public List<Director> getByFilmId(long filmId) {
-        if (isIncorrectId(filmId))  {
-            throw new WrongIdException("Param must be more then 0");
-        }
         return jdbcTemplate.query(
                 "SELECT * FROM directors WHERE id IN (SELECT director_id FROM film_director WHERE film_id = ?)",
                 (rs, RowNum) -> mapper(rs),
@@ -94,9 +87,5 @@ public class DbDirectorStorage implements DirectorStorage {
         } catch (SQLException e) {
             throw new WrongIdException("Can't unwrap director from DB response");
         }
-    }
-
-    private boolean isIncorrectId(long id) {
-        return id <= 0;
     }
 }

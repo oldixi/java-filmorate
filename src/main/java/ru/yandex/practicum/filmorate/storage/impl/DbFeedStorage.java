@@ -6,10 +6,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.Feed;
+import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.storage.FeedStorage;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -25,10 +25,8 @@ public class DbFeedStorage implements FeedStorage {
     private static final String INSERT_SQL =
             "insert into events(timestamp, operation, event_type, user_id, entity_id) values(?, ?, ?, ?, ?)";
     private final JdbcTemplate jdbcTemplate;
-    private final UserStorage userStorage;
-    private final FilmStorage filmStorage;
 
-    private void addFeed(Feed.Operation operation, Feed.EventType eventType, long userId, long entityId) {
+    private void addFeed(Operation operation, EventType eventType, long userId, long entityId) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
             PreparedStatement stmt = connection.prepareStatement(INSERT_SQL, new String[]{"id"});
@@ -47,60 +45,46 @@ public class DbFeedStorage implements FeedStorage {
 
     @Override
     public void addReview(long userId, long entityId) {
-        userStorage.getById(userId);
-        addFeed(Feed.Operation.ADD, Feed.EventType.REVIEW, userId, entityId);
+        addFeed(Operation.ADD, EventType.REVIEW, userId, entityId);
     }
 
     @Override
     public void deleteReview(long userId, long entityId) {
-        userStorage.getById(userId);
-        addFeed(Feed.Operation.REMOVE, Feed.EventType.REVIEW, userId, entityId);
+        addFeed(Operation.REMOVE, EventType.REVIEW, userId, entityId);
     }
 
     @Override
     public void updateReview(long userId, long entityId) {
-        userStorage.getById(userId);
-        addFeed(Feed.Operation.UPDATE, Feed.EventType.REVIEW, userId, entityId);
+        addFeed(Operation.UPDATE, EventType.REVIEW, userId, entityId);
     }
 
     @Override
     public void addLike(long userId, long entityId) {
-        userStorage.getById(userId);
-        filmStorage.getById(entityId);
-        addFeed(Feed.Operation.ADD, Feed.EventType.LIKE, userId, entityId);
+        addFeed(Operation.ADD, EventType.LIKE, userId, entityId);
     }
 
     @Override
     public void deleteLike(long userId, long entityId) {
-        userStorage.getById(userId);
-        filmStorage.getById(entityId);
-        addFeed(Feed.Operation.REMOVE, Feed.EventType.LIKE, userId, entityId);
+        addFeed(Operation.REMOVE, EventType.LIKE, userId, entityId);
     }
 
     @Override
     public void addFriendRequest(long userId, long entityId) {
-        userStorage.getById(userId);
-        userStorage.getById(entityId);
-        addFeed(Feed.Operation.ADD, Feed.EventType.FRIEND, userId, entityId);
+        addFeed(Operation.ADD, EventType.FRIEND, userId, entityId);
     }
 
     @Override
     public void deleteFriendRequest(long userId, long entityId) {
-        userStorage.getById(userId);
-        userStorage.getById(entityId);
-        addFeed(Feed.Operation.REMOVE, Feed.EventType.FRIEND, userId, entityId);
+        addFeed(Operation.REMOVE, EventType.FRIEND, userId, entityId);
     }
 
     @Override
     public void acceptFriendRequest(long userId, long entityId) {
-        userStorage.getById(userId);
-        userStorage.getById(entityId);
-        addFeed(Feed.Operation.UPDATE, Feed.EventType.FRIEND, userId, entityId);
+        addFeed(Operation.UPDATE, EventType.FRIEND, userId, entityId);
     }
 
     @Override
     public List<Feed> getFeedList(long userId) {
-        userStorage.getById(userId);
         String sql = "select e.* " +
                 "from events e " +
                 "where e.user_id = ? " +
@@ -111,8 +95,8 @@ public class DbFeedStorage implements FeedStorage {
     private Feed mapper(ResultSet resultSet) throws SQLException {
         long id = resultSet.getLong("id");
         long timestamp = resultSet.getLong("timestamp");
-        Feed.Operation operation = Feed.Operation.valueOf(resultSet.getString("operation"));
-        Feed.EventType eventType = Feed.EventType.valueOf(resultSet.getString("event_type"));
+        Operation operation = Operation.valueOf(resultSet.getString("operation"));
+        EventType eventType = EventType.valueOf(resultSet.getString("event_type"));
         long userId = resultSet.getLong("user_id");
         long entityId = resultSet.getLong("entity_id");
 
