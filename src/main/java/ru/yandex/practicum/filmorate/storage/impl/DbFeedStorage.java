@@ -84,7 +84,7 @@ public class DbFeedStorage implements FeedStorage {
     }
 
     @Override
-    public List<Feed> getFeedList(long userId) {
+    public List<Feed> getFeed(long userId) {
         String sql = "select e.* " +
                 "from events e " +
                 "where e.user_id = ? " +

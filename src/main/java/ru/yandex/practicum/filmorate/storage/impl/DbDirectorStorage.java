@@ -90,7 +90,7 @@ public class DbDirectorStorage implements DirectorStorage {
         }
     }
 
-    private Director mapper(ResultSet resultSet) throws SQLException {
+    private Director mapper(ResultSet resultSet) {
         try {
             return new Director(resultSet.getInt("id"), resultSet.getString("name"));
         } catch (SQLException e) {

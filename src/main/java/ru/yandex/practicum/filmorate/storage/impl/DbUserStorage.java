@@ -80,7 +80,7 @@ public class DbUserStorage implements UserStorage {
     }
 
     @Override
-    public List<User> getCommonFriendsByUserId(long userId, long otherId) {
+    public List<User> getCommonFriends(long userId, long otherId) {
         String sql = "select u.* " +
                 "from friends fl1 join friends fl2 on fl1.friend_id = fl2.friend_id " +
                 "join users u on fl2.friend_id = u.id " +

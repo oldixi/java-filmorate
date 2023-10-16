@@ -28,20 +28,21 @@ public class UserService {
     public User create(User user) {
         changeNameToLogin(user);
         if (isNotValid(user)) {
-            throw new ValidationException("Can't create new user. Check your data.");
+            throw new ValidationException("Wrong user data");
         }
-        userStorage.add(user);
-        return user;
+
+        return userStorage.add(user);
     }
 
     public User update(User user) {
         changeNameToLogin(user);
         if (isNotValid(user)) {
-            throw new ValidationException("Can't create new user. Check your data.");
+            throw new ValidationException("Wrong user data");
         }
         if (!isLegalUserId(user.getId())) {
-            throw new WrongIdException("No user with id = " + user.getId() + " in DB was found.");
+            throw new WrongIdException("No users with id = " + user.getId() + " in DB were found.");
         }
+
         return userStorage.update(user);
     }
 
@@ -50,7 +51,7 @@ public class UserService {
     }
 
     public void deleteUserById(long id) {
-        if (isIncorrectId(id))  {
+        if (isIncorrectId(id)) {
             throw new WrongIdException("Param must be more then 0");
         }
         userStorage.delete(id);
@@ -68,6 +69,7 @@ public class UserService {
         if (!isLegalUserId(userId) || !isLegalUserId(friendId)) {
             throw new WrongIdException("No users with id = " + userId + " or " + friendId + " in DB were found.");
         }
+
         friendStorage.deleteFriend(userId, friendId);
         feedStorage.deleteFriendRequest(userId, friendId);
     }
@@ -76,6 +78,7 @@ public class UserService {
         if (!isLegalUserId(userId) || !isLegalUserId(friendId)) {
             throw new WrongIdException("No users with id = " + userId + " or " + friendId + " in DB were found.");
         }
+
         friendStorage.acceptFriendRequest(userId, friendId);
         feedStorage.acceptFriendRequest(userId, friendId);
     }
@@ -84,14 +87,16 @@ public class UserService {
         if (!isLegalUserId(userId) || !isLegalUserId(otherId)) {
             throw new WrongIdException("No users with id = " + userId + " or " + otherId + " in DB were found.");
         }
-        return userStorage.getCommonFriendsByUserId(userId, otherId);
+
+        return userStorage.getCommonFriends(userId, otherId);
     }
 
     public List<Feed> getEventsList(long userId) {
         if (!isLegalUserId(userId)) {
             throw new WrongIdException("No user with id = " + userId + " in DB was found.");
         }
-        return feedStorage.getFeedList(userId);
+
+        return feedStorage.getFeed(userId);
     }
 
     public User getById(long userId) {
@@ -99,9 +104,11 @@ public class UserService {
             throw new WrongIdException("Param must be more then 0");
         }
         Optional<User> userOpt = userStorage.getById(userId);
+
         if (userOpt.isEmpty()) {
             throw new WrongIdException("No user with id = " + userId + " in DB was found.");
         }
+
         return userOpt.get();
     }
 
@@ -109,6 +116,7 @@ public class UserService {
         if (!isLegalUserId(userId)) {
             throw new WrongIdException("No user with id = " + userId + " in DB was found.");
         }
+
         return userStorage.getFriendsByUserId(userId);
     }
 
@@ -116,6 +124,7 @@ public class UserService {
         if (!isLegalUserId(userId)) {
             throw new WrongIdException("No user with id = " + userId + " in DB was found.");
         }
+
         return filmFullService.getRecommendations(userId);
     }
 
