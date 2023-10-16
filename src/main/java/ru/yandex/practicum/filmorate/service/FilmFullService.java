@@ -67,9 +67,11 @@ public class FilmFullService {
     }
 
     private Film addAttributesToFilm(Film film) {
-        film.setGenres(genreStorage.getByFilmId(film.getId()));
-        film.setDirectors(directorStorage.getByFilmId(film.getId()));
-        film.setMpa(mpaStorage.getMpaByFilmId(film.getId()).orElse(null));
+        if (film != null) {
+            film.setGenres(genreStorage.getByFilmId(film.getId()));
+            film.setDirectors(directorStorage.getByFilmId(film.getId()));
+            film.setMpa(mpaStorage.getMpaByFilmId(film.getId()).orElse(null));
+        }
         return film;
     }
 

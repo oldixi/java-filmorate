@@ -32,7 +32,7 @@ public class DbReviewStorage implements ReviewStorage {
         jdbcTemplate.update(connection -> {
             PreparedStatement stmt = connection.prepareStatement(sqlQuery, new String[]{"id"});
             stmt.setString(1, review.getContent());
-            stmt.setBoolean(2, review.getIsPositive());
+            stmt.setBoolean(2, review.getPositive());
             stmt.setLong(3, review.getUserId());
             stmt.setLong(4, review.getFilmId());
             return stmt;
@@ -52,7 +52,7 @@ public class DbReviewStorage implements ReviewStorage {
         getReviewById(review.getReviewId());
         jdbcTemplate.update("update reviews set content = ?, is_positive = ? where id = ?",
                 review.getContent(),
-                review.isIsPositive(),
+                review.getPositive(),
                 review.getReviewId());
         Optional<Review> reviewUpdated = getReviewById(review.getReviewId());
         log.info("Review {} from user {} on film {} updated",
@@ -106,7 +106,7 @@ public class DbReviewStorage implements ReviewStorage {
             return Review.builder()
                     .reviewId(resultSet.getLong("id"))
                     .content(resultSet.getString("content"))
-                    .isPositive(resultSet.getBoolean("is_positive"))
+                    .positive(resultSet.getBoolean("is_positive"))
                     .userId(resultSet.getLong("user_id"))
                     .filmId(resultSet.getLong("film_id"))
                     .useful(resultSet.getInt("u.cnt"))
