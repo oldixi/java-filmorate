@@ -81,6 +81,15 @@ public class DbDirectorStorage implements DirectorStorage {
                 filmId);
     }
 
+    @Override
+    public boolean isLegalId(long Id) {
+        try {
+            return jdbcTemplate.queryForObject("select 1 from directors where id=?", Integer.class, Id) != null;
+        } catch (EmptyResultDataAccessException e) {
+            return false;
+        }
+    }
+
     private Director mapper(ResultSet resultSet) throws SQLException {
         try {
             return new Director(resultSet.getInt("id"), resultSet.getString("name"));

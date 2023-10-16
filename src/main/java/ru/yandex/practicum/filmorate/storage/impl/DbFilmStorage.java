@@ -217,6 +217,15 @@ public class DbFilmStorage implements FilmStorage {
                 this::mapper, userId, userId);
     }
 
+    @Override
+    public boolean isLegalId(long Id) {
+        try {
+            return jdbcTemplate.queryForObject("select 1 from films where id=?", Integer.class, Id) != null;
+        } catch (EmptyResultDataAccessException e) {
+            return false;
+        }
+    }
+
     private Film mapper(ResultSet resultSet, int rowNum) {
         try {
             return Film.builder()

@@ -101,6 +101,15 @@ public class DbReviewStorage implements ReviewStorage {
         );
     }
 
+    @Override
+    public boolean isLegalId(long Id) {
+        try {
+            return jdbcTemplate.queryForObject("select 1 from reviews where id=?", Integer.class, Id) != null;
+        } catch (EmptyResultDataAccessException e) {
+        return false;
+    }
+    }
+
     private Review mapper(ResultSet resultSet, int rowNum) {
         try {
             return Review.builder()

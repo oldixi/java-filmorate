@@ -25,4 +25,6 @@ public interface FilmStorage {
     List<Film> searchFilms(String query, String by);
 
     List<Film> getRecommendations(long userId);
+
+    boolean isLegalId(long Id);
 }

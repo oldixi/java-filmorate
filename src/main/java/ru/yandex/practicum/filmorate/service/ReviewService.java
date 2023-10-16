@@ -24,8 +24,11 @@ public class ReviewService {
     private final UserService userService;
 
     public Review addReview(Review review) {
-        if (!filmService.isLegalFilmId(review.getFilmId()) || !userService.isLegalUserId(review.getUserId())) {
-            return review;
+        if (!filmService.isLegalFilmId(review.getFilmId())) {
+            throw new WrongIdException("No film with id = " + review.getFilmId() + " in DB was found.");
+        }
+        if (!userService.isLegalUserId(review.getUserId())) {
+            throw new WrongIdException("No user with id = " + review.getUserId() + " in DB was found.");
         }
         Review reviewAdded = reviewStorage.addReview(review);
         feedStorage.addReview(reviewAdded.getUserId(), reviewAdded.getReviewId());
@@ -33,8 +36,11 @@ public class ReviewService {
     }
 
     public Review updateReview(Review review) {
-        if (!filmService.isLegalFilmId(review.getFilmId()) || !userService.isLegalUserId(review.getUserId())) {
-            return review;
+        if (!filmService.isLegalFilmId(review.getFilmId())) {
+            throw new WrongIdException("No film with id = " + review.getFilmId() + " in DB was found.");
+        }
+        if (!userService.isLegalUserId(review.getUserId())) {
+            throw new WrongIdException("No user with id = " + review.getUserId() + " in DB was found.");
         }
         if (!isLegalReviewId(review.getReviewId())) {
             throw new WrongIdException("No review with id = " + review.getReviewId() + " in DB was found.");
@@ -70,33 +76,44 @@ public class ReviewService {
     }
 
     public List<Review> getReviewsByFilmId(Long filmId, int count) {
-        if (filmId == DUMMY_PARAM_VALUE) {
+        if (filmId == DUMMY_PARAM_VALUE || !filmService.isLegalFilmId(filmId)) {
             return getAllReviews();
         }
-        filmService.isLegalFilmId(filmId);
         return reviewStorage.getReviewsByFilmId(filmId, count);
     }
 
     public void addLikeToReview(long id, long userId) {
-        if (isLegalReviewId(id) && userService.isLegalUserId(userId)) {
-            reviewLikeStorage.addLike(id, userId);
+        if (!userService.isLegalUserId(userId)) {
+            throw new WrongIdException("No user with id = " + userId + " in DB was found.");
         }
+        if (!isLegalReviewId(id)) {
+            throw new WrongIdException("No review with id = " + id+ " in DB was found.");
+        }
+        reviewLikeStorage.addLike(id, userId);
     }
 
     public void addDislikeToReview(long id, long userId) {
-        if (isLegalReviewId(id) && userService.isLegalUserId(userId)) {
-            reviewLikeStorage.addDislike(id, userId);
+        if (!userService.isLegalUserId(userId)) {
+            throw new WrongIdException("No user with id = " + userId + " in DB was found.");
         }
+        if (!isLegalReviewId(id)) {
+            throw new WrongIdException("No review with id = " + id+ " in DB was found.");
+        }
+        reviewLikeStorage.addDislike(id, userId);
     }
 
     public void deleteLikeOrDislike(long id, long userId) {
-        if (isLegalReviewId(id) && userService.isLegalUserId(userId)) {
-            reviewLikeStorage.deleteLikeOrDislike(id, userId);
+        if (!userService.isLegalUserId(userId)) {
+            throw new WrongIdException("No user with id = " + userId + " in DB was found.");
         }
+        if (!isLegalReviewId(id)) {
+            throw new WrongIdException("No review with id = " + id+ " in DB was found.");
+        }
+        reviewLikeStorage.deleteLikeOrDislike(id, userId);
     }
 
     public boolean isLegalReviewId(Long reviewId) {
-        return getReviewById(reviewId) != null;
+        return !isIncorrectId(reviewId) && reviewStorage.isLegalId(reviewId);
     }
 
     private boolean isIncorrectId(long id) {

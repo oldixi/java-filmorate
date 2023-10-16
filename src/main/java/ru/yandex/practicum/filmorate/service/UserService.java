@@ -58,36 +58,39 @@ public class UserService {
     }
 
     public void addFriend(long userId, long friendId) {
-        if (isLegalUserId(userId) && isLegalUserId(friendId)) {
-            friendStorage.addFriend(userId, friendId);
-            feedStorage.addFriendRequest(userId, friendId);
+        if (!isLegalUserId(userId) || !isLegalUserId(friendId)) {
+            throw new WrongIdException("No users with id = " + userId + " or " + friendId + " in DB were found.");
         }
+        friendStorage.addFriend(userId, friendId);
+        feedStorage.addFriendRequest(userId, friendId);
     }
 
     public void deleteFriend(long userId, long friendId) {
-        if (isLegalUserId(userId) && isLegalUserId(friendId)) {
-            friendStorage.deleteFriend(userId, friendId);
-            feedStorage.deleteFriendRequest(userId, friendId);
+        if (!isLegalUserId(userId) || !isLegalUserId(friendId)) {
+            throw new WrongIdException("No users with id = " + userId + " or " + friendId + " in DB were found.");
         }
+        friendStorage.deleteFriend(userId, friendId);
+        feedStorage.deleteFriendRequest(userId, friendId);
     }
 
     public void updateFriendRequest(long userId, long friendId) {
-        if (isLegalUserId(userId) && isLegalUserId(friendId)) {
-            friendStorage.acceptFriendRequest(userId, friendId);
-            feedStorage.acceptFriendRequest(userId, friendId);
+        if (!isLegalUserId(userId) || !isLegalUserId(friendId)) {
+            throw new WrongIdException("No users with id = " + userId + " or " + friendId + " in DB were found.");
         }
+        friendStorage.acceptFriendRequest(userId, friendId);
+        feedStorage.acceptFriendRequest(userId, friendId);
     }
 
     public List<User> findCommonFriends(long userId, long otherId) {
         if (!isLegalUserId(userId) || !isLegalUserId(otherId)) {
-            return new ArrayList<>();
+            throw new WrongIdException("No users with id = " + userId + " or " + otherId + " in DB were found.");
         }
         return userStorage.getCommonFriendsByUserId(userId, otherId);
     }
 
     public List<Feed> getEventsList(long userId) {
         if (!isLegalUserId(userId)) {
-            return new ArrayList<>();
+            throw new WrongIdException("No user with id = " + userId + " in DB was found.");
         }
         return feedStorage.getFeedList(userId);
     }
@@ -105,7 +108,7 @@ public class UserService {
 
     public List<User> getFriends(long userId) {
         if (!isLegalUserId(userId)) {
-            return new ArrayList<>();
+            throw new WrongIdException("No user with id = " + userId + " in DB was found.");
         }
         return userStorage.getFriendsByUserId(userId);
     }
@@ -118,7 +121,7 @@ public class UserService {
     }
 
     public boolean isLegalUserId(long userId) {
-        return getById(userId) != null;
+        return !isIncorrectId(userId) && userStorage.isLegalId(userId);
     }
 
     private boolean isIncorrectId(long id) {

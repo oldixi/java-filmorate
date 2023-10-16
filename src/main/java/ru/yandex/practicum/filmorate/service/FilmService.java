@@ -57,10 +57,14 @@ public class FilmService {
     }
 
     public void deleteLike(long userId, long filmId) {
-        if (isLegalFilmId(filmId) && userService.isLegalUserId(userId)) {
-            likeStorage.deleteLike(userId, filmId);
-            feedStorage.deleteLike(userId, filmId);
+        if (!isLegalFilmId(filmId)) {
+            throw new WrongIdException("No film with id = " + filmId + " in DB was found.");
         }
+        if (!userService.isLegalUserId(userId)) {
+            throw new WrongIdException("No user with id = " + userId + " in DB was found.");
+        }
+        likeStorage.deleteLike(userId, filmId);
+        feedStorage.deleteLike(userId, filmId);
     }
 
     public void deleteFilmById(long id) {
@@ -86,8 +90,8 @@ public class FilmService {
     }
 
     public List<Film> getTopByDirector(int id, String sortBy) {
-        if (directorService.isIllegalDirectorId(id)) {
-            return new ArrayList<>();
+        if (!directorService.isLegalDirectorId(id)) {
+            throw new WrongIdException("No director with id = " + id + " in DB was found.");
         }
         return filmFullService.getTopByDirector(id, sortBy);
     }
@@ -104,7 +108,7 @@ public class FilmService {
     }
 
     public boolean isLegalFilmId(long filmId) {
-        return getFilmById(filmId) != null;
+        return !isIncorrectId(filmId) && filmStorage.isLegalId(filmId);
     }
 
     private boolean isIncorrectId(long id) {

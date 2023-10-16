@@ -18,4 +18,5 @@ public interface ReviewStorage {
 
     List<Review> getReviewsByFilmId(long filmId, int count);
 
+    boolean isLegalId(long Id);
 }

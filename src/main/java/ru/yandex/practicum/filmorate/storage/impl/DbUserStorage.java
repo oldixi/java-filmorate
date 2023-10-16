@@ -96,6 +96,15 @@ public class DbUserStorage implements UserStorage {
         return jdbcTemplate.query(sql, this::mapper, userId);
     }
 
+    @Override
+    public boolean isLegalId(long Id) {
+        try {
+            return jdbcTemplate.queryForObject("select 1 from users where id=?", Integer.class, Id) != null;
+        } catch (EmptyResultDataAccessException e) {
+            return false;
+        }
+    }
+
     private User mapper(ResultSet resultSet, int rowNum) throws SQLException {
         return User.builder()
                 .id(resultSet.getLong("id"))

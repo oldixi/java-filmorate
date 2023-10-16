@@ -17,4 +17,6 @@ public interface DirectorStorage {
     long deleteDirector(long id);
 
     List<Director> getByFilmId(long filmId);
+
+    boolean isLegalId(long Id);
 }

@@ -62,8 +62,8 @@ public class FilmFullService {
         return addAttributesToFilm(filmStorage.update(film));
     }
 
-    private boolean isIncorrectId(Long id) {
-        return id == null || id <= 0;
+    private boolean isIncorrectId(long id) {
+        return id <= 0;
     }
 
     private Film addAttributesToFilm(Film film) {

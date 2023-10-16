@@ -19,4 +19,6 @@ public interface UserStorage {
     List<User> getCommonFriendsByUserId(long userId, long otherId);
 
     List<User> getFriendsByUserId(long userId);
+
+    boolean isLegalId(long Id);
 }
