@@ -97,9 +97,9 @@ public class DbUserStorage implements UserStorage {
     }
 
     @Override
-    public boolean isLegalId(long Id) {
+    public boolean isLegalId(long id) {
         try {
-            return jdbcTemplate.queryForObject("select 1 from users where id=?", Integer.class, Id) != null;
+            return jdbcTemplate.queryForObject("select 1 from users where id=?", Integer.class, id) != null;
         } catch (EmptyResultDataAccessException e) {
             return false;
         }

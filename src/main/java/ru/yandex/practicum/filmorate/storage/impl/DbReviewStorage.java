@@ -102,9 +102,9 @@ public class DbReviewStorage implements ReviewStorage {
     }
 
     @Override
-    public boolean isLegalId(long Id) {
+    public boolean isLegalId(long id) {
         try {
-            return jdbcTemplate.queryForObject("select 1 from reviews where id=?", Integer.class, Id) != null;
+            return jdbcTemplate.queryForObject("select 1 from reviews where id=?", Integer.class, id) != null;
         } catch (EmptyResultDataAccessException e) {
         return false;
     }

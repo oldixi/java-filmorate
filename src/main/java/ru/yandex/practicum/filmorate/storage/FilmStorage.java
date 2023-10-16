@@ -26,5 +26,5 @@ public interface FilmStorage {
 
     List<Film> getRecommendations(long userId);
 
-    boolean isLegalId(long Id);
+    boolean isLegalId(long id);
 }
