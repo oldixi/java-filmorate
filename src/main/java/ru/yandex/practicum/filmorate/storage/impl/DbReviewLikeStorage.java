@@ -7,8 +7,6 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.storage.ReviewLikeStorage;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 
-import java.util.Optional;
-
 @Repository
 @RequiredArgsConstructor
 @Slf4j
@@ -42,15 +40,4 @@ public class DbReviewLikeStorage implements ReviewLikeStorage {
                 userId
         );
     }
-
-/*    @Override
-    public int getUsability(long reviewId) {
-        reviewStorage.getReviewById(reviewId);
-        Optional<Integer> useful = Optional.ofNullable(jdbcTemplate.queryForObject(
-                "select sum(useful) from review_like where review_id = ?",
-                Integer.class,
-                reviewId
-        ));
-        return useful.get();
-    }*/
 }

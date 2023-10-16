@@ -34,24 +34,24 @@ public class DirectorService {
     }
 
     public Director updateDirector(Director director) {
-        if (!isLegalDirectorId(director.getId())) {
+        if (isIllegalDirectorId(director.getId())) {
             return director;
         }
         return directorStorage.updateDirector(director);
     }
 
-    public long deleteDirector(long id) {
+    public long deleteDirector(int id) {
         if (isIncorrectId(id))  {
             throw new WrongIdException("Param must be more then 0");
         }
         return directorStorage.deleteDirector(id);
     }
 
-    public boolean isLegalDirectorId(int directorId) {
-        return getDirectorById(directorId) != null;
+    public boolean isIllegalDirectorId(int directorId) {
+        return getDirectorById(directorId) == null;
     }
 
-    private boolean isIncorrectId(long id) {
+    private boolean isIncorrectId(int id) {
         return id <= 0;
     }
 }

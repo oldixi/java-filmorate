@@ -10,13 +10,7 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.exception.WrongIdException;
-import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.storage.GenreStorage;
-import ru.yandex.practicum.filmorate.storage.DirectorStorage;
-import ru.yandex.practicum.filmorate.storage.MpaStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.sql.PreparedStatement;
@@ -32,9 +26,6 @@ import java.util.stream.Collectors;
 @Slf4j
 public class DbFilmStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
-    private final GenreStorage genreStorage;
-    private final DirectorStorage directorStorage;
-    private final MpaStorage mpaStorage;
 
     @Override
     public Film add(Film film) {
@@ -162,7 +153,6 @@ public class DbFilmStorage implements FilmStorage {
 
     @Override
     public List<Film> getTopByDirector(int id, String sortBy) {
-        directorStorage.getDirectorById(id);
         String sqlRequest = "SELECT f.* FROM films f LEFT JOIN " +
                 "(SELECT fl.film_id, COUNT(fl.user_id) cnt FROM film_like fl GROUP BY fl.film_id) l " +
                 "on f.id = l.film_id " +
@@ -229,19 +219,12 @@ public class DbFilmStorage implements FilmStorage {
 
     private Film mapper(ResultSet resultSet, int rowNum) {
         try {
-            Mpa mpa = mpaStorage.getById(resultSet.getInt("rating"));
-            List<Genre> genres = genreStorage.getByFilmId(resultSet.getLong("id"));
-            List<Director> directors = directorStorage.getByFilmId(resultSet.getLong("id"));
-
             return Film.builder()
                     .id(resultSet.getLong("id"))
                     .name(resultSet.getString("name"))
                     .description(resultSet.getString("description"))
                     .releaseDate(resultSet.getDate("release_date").toLocalDate())
                     .duration(resultSet.getInt("duration"))
-                    .mpa(mpa)
-                    .genres(genres)
-                    .directors(directors)
                     .build();
         } catch (SQLException e) {
             throw new WrongIdException("Can't unwrap film from DB response");

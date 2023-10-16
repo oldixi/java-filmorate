@@ -8,7 +8,6 @@ import ru.yandex.practicum.filmorate.exception.WrongIdException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.FriendStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -24,8 +23,8 @@ import java.util.Optional;
 public class UserService {
     private final UserStorage userStorage;
     private final FriendStorage friendStorage;
-    private final FilmStorage filmStorage;
     private final FeedStorage feedStorage;
+    private final FilmFullService filmFullService;
 
     public User create(User user) {
         changeNameToLogin(user);
@@ -115,7 +114,7 @@ public class UserService {
         if (!isLegalUserId(userId)) {
             return new ArrayList<>();
         }
-        return filmStorage.getRecommendations(userId);
+        return filmFullService.getRecommendations(userId);
     }
 
     public boolean isLegalUserId(Long userId) {

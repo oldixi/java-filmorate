@@ -6,7 +6,9 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.exception.WrongIdException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.*;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.LikeStorage;
+import ru.yandex.practicum.filmorate.storage.FeedStorage;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -22,10 +24,9 @@ public class FilmService {
     private final FilmStorage filmStorage;
     private final LikeStorage likeStorage;
     private final FeedStorage feedStorage;
-    private final DirectorService directorService;
     private final UserService userService;
-    private final GenreService genreService;
-    private final MpaService mpaService;
+    private final DirectorService directorService;
+    private final FilmFullService filmFullService;
 
     public Film addFilm(Film film) {
         if (isNotValid(film)) {
@@ -41,7 +42,7 @@ public class FilmService {
         if (!isLegalFilmId(film.getId())) {
             return film;
         }
-        return filmStorage.update(film);
+        return filmFullService.update(film);
     }
 
     public void addLike(long userId, long filmId) {
@@ -62,42 +63,6 @@ public class FilmService {
         }
     }
 
-    public Film getFilmById(long filmId) {
-        if (isIncorrectId(filmId)) {
-            throw new WrongIdException("Param must be more then 0");
-        }
-        Optional<Film> filmOpt = filmStorage.getById(filmId);
-        if (filmOpt.isEmpty()) {
-            throw new WrongIdException("No film with id = " + filmId + " in DB was found.");
-        }
-        return filmOpt.get();
-    }
-
-    public List<Film> getAllFilms() {
-        return filmStorage.getAllFilms();
-    }
-
-    public List<Film> getTopFilms(int count, Optional<Integer> genreId, Optional<String> year) {
-        if (count <= 0) {
-            count = DEFAULT_FILMS_COUNT;
-        }
-        return filmStorage.getPopular(count, genreId, year);
-    }
-
-    public List<Film> getTopByDirector(int id, String sortBy) {
-        if (!directorService.isLegalDirectorId(id)) {
-            return new ArrayList<>();
-        }
-        return filmStorage.getTopByDirector(id, sortBy);
-    }
-
-    public List<Film> getCommonFilms(long userId, long friendId) {
-        if (!userService.isLegalUserId(userId) || !userService.isLegalUserId(friendId)) {
-            return new ArrayList<>();
-        }
-        return filmStorage.getCommonFilms(userId, friendId);
-    }
-
     public void deleteFilmById(long id) {
         if (isIncorrectId(id)) {
             throw new WrongIdException("Param must be more then 0");
@@ -105,8 +70,37 @@ public class FilmService {
         filmStorage.delete(id);
     }
 
+    public Film getFilmById(long filmId) {
+        return filmFullService.getFilmById(filmId);
+    }
+
+    public List<Film> getAllFilms() {
+        return filmFullService.getAllFilms();
+    }
+
+    public List<Film> getTopFilms(int count, Optional<Integer> genreId, Optional<String> year) {
+        if (count <= 0) {
+            count = DEFAULT_FILMS_COUNT;
+        }
+        return filmFullService.getTopFilms(count, genreId, year);
+    }
+
+    public List<Film> getTopByDirector(int id, String sortBy) {
+        if (directorService.isIllegalDirectorId(id)) {
+            return new ArrayList<>();
+        }
+        return filmFullService.getTopByDirector(id, sortBy);
+    }
+
+    public List<Film> getCommonFilms(long userId, long friendId) {
+        if (!userService.isLegalUserId(userId) || !userService.isLegalUserId(friendId)) {
+            return new ArrayList<>();
+        }
+        return filmFullService.getCommonFilms(userId, friendId);
+    }
+
     public List<Film> searchFilms(String query, String by) {
-        return filmStorage.searchFilms(query, by);
+        return filmFullService.searchFilms(query, by);
     }
 
     public boolean isLegalFilmId(Long filmId) {
