@@ -97,8 +97,8 @@ public class FilmService {
     }
 
     public List<Film> getCommonFilms(long userId, long friendId) {
-        if (!userService.isLegalUserId(userId) || !userService.isLegalUserId(friendId)) {
-            return new ArrayList<>();
+        if (!isLegalFilmId(userId) || !isLegalFilmId(friendId)) {
+            throw new WrongIdException("No users with id = " + userId + " or " + friendId + " in DB was found.");
         }
         return filmFullService.getCommonFilms(userId, friendId);
     }

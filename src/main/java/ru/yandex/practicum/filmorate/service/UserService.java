@@ -115,7 +115,7 @@ public class UserService {
 
     public List<Film> getRecommendations(long userId) {
         if (!isLegalUserId(userId)) {
-            return new ArrayList<>();
+            throw new WrongIdException("No user with id = " + userId + " in DB was found.");
         }
         return filmFullService.getRecommendations(userId);
     }
