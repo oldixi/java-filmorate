@@ -117,12 +117,12 @@ public class UserService {
         return filmFullService.getRecommendations(userId);
     }
 
-    public boolean isLegalUserId(Long userId) {
+    public boolean isLegalUserId(long userId) {
         return getById(userId) != null;
     }
 
-    private boolean isIncorrectId(Long id) {
-        return id == null || id <= 0;
+    private boolean isIncorrectId(long id) {
+        return id <= 0;
     }
 
     private boolean isNotValid(User user) {

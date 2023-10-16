@@ -103,12 +103,12 @@ public class FilmService {
         return filmFullService.searchFilms(query, by);
     }
 
-    public boolean isLegalFilmId(Long filmId) {
+    public boolean isLegalFilmId(long filmId) {
         return getFilmById(filmId) != null;
     }
 
-    private boolean isIncorrectId(Long id) {
-        return id == null || id <= 0;
+    private boolean isIncorrectId(long id) {
+        return id <= 0;
     }
 
     private boolean isNotValid(Film film) {
