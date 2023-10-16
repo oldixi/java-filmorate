@@ -53,11 +53,11 @@ public class ReviewService {
         if (isIncorrectId(id)) {
             throw new WrongIdException("Param must be more then 0");
         }
-        Optional<Review> ReviewOpt = reviewStorage.getReviewById(id);
-        if (ReviewOpt.isEmpty()) {
+        Optional<Review> reviewOpt = reviewStorage.getReviewById(id);
+        if (reviewOpt.isEmpty()) {
             throw new WrongIdException("No review with id = " + id + " in DB was found.");
         }
-        return ReviewOpt.get();
+        return reviewOpt.get();
     }
 
     public List<Review> getAllReviews() {
