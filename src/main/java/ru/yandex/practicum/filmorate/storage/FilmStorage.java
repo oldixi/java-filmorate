@@ -12,7 +12,7 @@ public interface FilmStorage {
 
     void delete(Long filmId);
 
-    Film getById(Long filmId);
+    Optional<Film> getById(Long filmId);
 
     List<Film> getAllFilms();
 
@@ -25,4 +25,6 @@ public interface FilmStorage {
     List<Film> searchFilms(String query, String by);
 
     List<Film> getRecommendations(long userId);
+
+    boolean isLegalId(long id);
 }

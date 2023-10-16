@@ -23,7 +23,6 @@ import java.util.Optional;
 @RequestMapping("/films")
 @RequiredArgsConstructor
 public class FilmController {
-    private static final int DUMMY_PARAM_VALUE = -1;
     private static final String DEFAULT_COUNT = "10";
     private final FilmService filmService;
 
