@@ -37,7 +37,7 @@ public class ReviewService {
             return review;
         }
         if (!isLegalReviewId(review.getReviewId())) {
-            return review;
+            throw new WrongIdException("No review with id = " + review.getReviewId() + " in DB was found.");
         }
         Review reviewUpdated = reviewStorage.updateReview(review);
         if (reviewUpdated != null) {

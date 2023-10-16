@@ -40,7 +40,7 @@ public class FilmService {
             throw new ValidationException("Film validation has been failed");
         }
         if (!isLegalFilmId(film.getId())) {
-            return film;
+            throw new WrongIdException("No film with id = " + film.getId() + " in DB was found.");
         }
         return filmFullService.update(film);
     }

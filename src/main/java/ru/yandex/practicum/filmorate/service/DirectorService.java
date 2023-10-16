@@ -35,7 +35,7 @@ public class DirectorService {
 
     public Director updateDirector(Director director) {
         if (isIllegalDirectorId(director.getId())) {
-            return director;
+            throw new WrongIdException("No director with id = " + director.getId() + " in DB was found.");
         }
         return directorStorage.updateDirector(director);
     }

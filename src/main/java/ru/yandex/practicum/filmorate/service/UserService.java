@@ -41,7 +41,7 @@ public class UserService {
             throw new ValidationException("Can't create new user. Check your data.");
         }
         if (!isLegalUserId(user.getId())) {
-            return user;
+            throw new WrongIdException("No user with id = " + user.getId() + " in DB was found.");
         }
         return userStorage.update(user);
     }
