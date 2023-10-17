@@ -6,13 +6,12 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.exception.WrongIdException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.LikeStorage;
-import ru.yandex.practicum.filmorate.storage.FeedStorage;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -38,14 +37,14 @@ public class FilmService {
         if (isNotValid(film)) {
             throw new ValidationException("Film validation has been failed");
         }
-        if (!isLegalFilmId(film.getId())) {
+        if (!existsById(film.getId())) {
             throw new WrongIdException("No film with id = " + film.getId() + " in DB was found.");
         }
         return filmFullService.update(film);
     }
 
     public void addLike(long userId, long filmId) {
-        if (isLegalFilmId(filmId) && userService.isLegalUserId(userId)) {
+        if (existsById(filmId) && userService.existsById(userId)) {
             if (likeStorage.getLikesByFilmId(filmId).contains(userId)) {
                 feedStorage.addLike(userId, filmId);
                 return;
@@ -56,10 +55,10 @@ public class FilmService {
     }
 
     public void deleteLike(long userId, long filmId) {
-        if (!isLegalFilmId(filmId)) {
+        if (!existsById(filmId)) {
             throw new WrongIdException("No film with id = " + filmId + " in DB was found.");
         }
-        if (!userService.isLegalUserId(userId)) {
+        if (!userService.existsById(userId)) {
             throw new WrongIdException("No user with id = " + userId + " in DB was found.");
         }
         likeStorage.deleteLike(userId, filmId);
@@ -81,7 +80,7 @@ public class FilmService {
         return filmFullService.getAllFilms();
     }
 
-    public List<Film> getTopFilms(int count, Optional<Integer> genreId, Optional<String> year) {
+    public List<Film> getTopFilms(int count, Integer genreId, String year) {
         if (count <= 0) {
             count = DEFAULT_FILMS_COUNT;
         }
@@ -89,14 +88,14 @@ public class FilmService {
     }
 
     public List<Film> getTopByDirector(int id, String sortBy) {
-        if (!directorService.isLegalDirectorId(id)) {
+        if (!directorService.existsById(id)) {
             throw new WrongIdException("No director with id = " + id + " in DB was found.");
         }
         return filmFullService.getTopByDirector(id, sortBy);
     }
 
     public List<Film> getCommonFilms(long userId, long friendId) {
-        if (!isLegalFilmId(userId) || !isLegalFilmId(friendId)) {
+        if (!existsById(userId) || !existsById(friendId)) {
             throw new WrongIdException("No users with id = " + userId + " or " + friendId + " in DB was found.");
         }
         return filmFullService.getCommonFilms(userId, friendId);
@@ -106,8 +105,8 @@ public class FilmService {
         return filmFullService.searchFilms(query, by);
     }
 
-    public boolean isLegalFilmId(long filmId) {
-        return !isIncorrectId(filmId) && filmStorage.isLegalId(filmId);
+    public boolean existsById(long filmId) {
+        return !isIncorrectId(filmId) && filmStorage.existsById(filmId);
     }
 
     private boolean isIncorrectId(long id) {
