@@ -10,7 +10,6 @@ import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Set;
 
 @Data
 @Builder
@@ -34,17 +33,6 @@ public class Film {
 
     private List<Genre> genres;
     private Mpa mpa;
-
-    private Set<Long> likeIds;
-
-    public Film addLike(Long userId) {
-        likeIds.add(userId);
-        return this;
-    }
-
-    public Film deleteLike(Long userId) {
-        likeIds.remove(userId);
-        return this;
-    }
+    private List<Director> directors;
 
 }

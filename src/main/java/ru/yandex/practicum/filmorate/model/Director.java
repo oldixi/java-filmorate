@@ -2,12 +2,13 @@ package ru.yandex.practicum.filmorate.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
+
+import javax.validation.constraints.NotBlank;
 
 @Data
-@RequiredArgsConstructor
 @AllArgsConstructor
-public class Mpa {
+public class Director {
     private int id;
+    @NotBlank
     private String name;
 }

@@ -4,97 +4,116 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.exception.WrongFilmIdException;
-import ru.yandex.practicum.filmorate.exception.WrongUserIdException;
+import ru.yandex.practicum.filmorate.exception.WrongIdException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.LikeStorage;
 
-import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class FilmService {
-    //Стас, пришлось криво называть константу - паттерн проверки кодстайла на гите не содержит '_'. В поддержку уже написал
-    private static final LocalDate EARLIESTFILMRELEASE = LocalDate.of(1895, 12, 5);
+    private static final LocalDate EARLIEST_FILM_RELEASE = LocalDate.of(1895, 12, 5);
+    private static final int DEFAULT_FILMS_COUNT = 10;
     private final FilmStorage filmStorage;
+    private final LikeStorage likeStorage;
+    private final FeedStorage feedStorage;
+    private final UserService userService;
+    private final DirectorService directorService;
+    private final FilmFullService filmFullService;
 
     public Film addFilm(Film film) {
         if (isNotValid(film)) {
             throw new ValidationException("Film validation has been failed");
         }
-
-        log.info("Film added {}.", film);
         return filmStorage.add(film);
     }
 
     public Film update(Film film) {
         if (isNotValid(film)) {
-            log.warn("Film is not valid. {}", film);
             throw new ValidationException("Film validation has been failed");
         }
-
-        log.info("Film updated {}", film);
-        return filmStorage.update(film);
+        if (!existsById(film.getId())) {
+            throw new WrongIdException("No film with id = " + film.getId() + " in DB was found.");
+        }
+        return filmFullService.update(film);
     }
 
     public void addLike(long userId, long filmId) {
-        if (isIncorrectId(filmId)) {
-            throw new WrongFilmIdException("Param must be more then 0");
+        if (existsById(filmId) && userService.existsById(userId)) {
+            if (likeStorage.getLikesByFilmId(filmId).contains(userId)) {
+                feedStorage.addLike(userId, filmId);
+                return;
+            }
+            likeStorage.addLike(userId, filmId);
+            feedStorage.addLike(userId, filmId);
         }
-
-        if (isIncorrectId(userId)) {
-            throw new WrongUserIdException("Param must be more then 0");
-        }
-
-        log.info("Like added to film {} from user {}", filmId, userId);
-        filmStorage.update(filmStorage.getById(filmId).addLike(userId));
     }
 
     public void deleteLike(long userId, long filmId) {
-        if (isIncorrectId(userId)) {
-            throw new WrongUserIdException("Param must be more then 0");
+        if (!existsById(filmId)) {
+            throw new WrongIdException("No film with id = " + filmId + " in DB was found.");
         }
-
-        if (isIncorrectId(filmId)) {
-            throw new WrongFilmIdException("Param must be more then 0");
+        if (!userService.existsById(userId)) {
+            throw new WrongIdException("No user with id = " + userId + " in DB was found.");
         }
+        likeStorage.deleteLike(userId, filmId);
+        feedStorage.deleteLike(userId, filmId);
+    }
 
-        filmStorage.update(filmStorage.getById(filmId).deleteLike(userId));
+    public void deleteFilmById(long id) {
+        if (isIncorrectId(id)) {
+            throw new WrongIdException("Param must be more then 0");
+        }
+        filmStorage.delete(id);
     }
 
     public Film getFilmById(long filmId) {
-        if (isIncorrectId(filmId)) {
-            throw new WrongFilmIdException("Param must be more then 0");
+        return filmFullService.getFilmById(filmId);
+    }
+
+    public List<Film> getAllFilms() {
+        return filmFullService.getAllFilms();
+    }
+
+    public List<Film> getTopFilms(int count, Integer genreId, String year) {
+        if (count <= 0) {
+            count = DEFAULT_FILMS_COUNT;
         }
-
-        return filmStorage.getById(filmId);
+        return filmFullService.getTopFilms(count, genreId, year);
     }
 
-    public List<Film> getAllFilms() throws SQLException {
-        return filmStorage.getAllFilms();
-    }
-
-    public List<Film> getTopFilms(long count) {
-        if (isIncorrectId(count)) {
-            throw new WrongFilmIdException("Param must be more then 0");
+    public List<Film> getTopByDirector(int id, String sortBy) {
+        if (!directorService.existsById(id)) {
+            throw new WrongIdException("No director with id = " + id + " in DB was found.");
         }
-
-        return filmStorage.getAllFilms().stream()
-                .sorted(Comparator.comparing(film -> -film.getLikeIds().size()))
-                .limit(count)
-                .collect(Collectors.toList());
+        return filmFullService.getTopByDirector(id, sortBy);
     }
 
-    private boolean isNotValid(Film film) {
-        return film.getReleaseDate().isBefore(EARLIESTFILMRELEASE);
+    public List<Film> getCommonFilms(long userId, long friendId) {
+        if (!existsById(userId) || !existsById(friendId)) {
+            throw new WrongIdException("No users with id = " + userId + " or " + friendId + " in DB was found.");
+        }
+        return filmFullService.getCommonFilms(userId, friendId);
+    }
+
+    public List<Film> searchFilms(String query, String by) {
+        return filmFullService.searchFilms(query, by);
+    }
+
+    public boolean existsById(long filmId) {
+        return !isIncorrectId(filmId) && filmStorage.existsById(filmId);
     }
 
     private boolean isIncorrectId(long id) {
         return id <= 0;
+    }
+
+    private boolean isNotValid(Film film) {
+        return film.getReleaseDate().isBefore(EARLIEST_FILM_RELEASE);
     }
 }
