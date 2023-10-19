@@ -218,12 +218,8 @@ public class DbFilmStorage implements FilmStorage {
 
     @Override
     public boolean existsById(long id) {
-        try {
-            Integer count = jdbcTemplate.queryForObject("select count(id) from films where id=?", Integer.class, id);
+            Integer count = jdbcTemplate.queryForObject("select count(1) from films where id=?", Integer.class, id);
             return count == 1;
-        } catch (EmptyResultDataAccessException e) {
-            return false;
-        }
     }
 
     private Film mapper(ResultSet resultSet, int rowNum) throws SQLException {

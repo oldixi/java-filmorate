@@ -100,13 +100,9 @@ public class DbReviewStorage implements ReviewStorage {
 
     @Override
     public boolean existsById(long id) {
-        try {
             Integer count = jdbcTemplate.queryForObject(
-                    "select count(id) from reviews where id=?", Integer.class, id);
+                    "select count(1) from reviews where id=?", Integer.class, id);
             return count == 1;
-        } catch (EmptyResultDataAccessException e) {
-            return false;
-        }
     }
 
     private Review mapper(ResultSet resultSet, int rowNum) throws SQLException {

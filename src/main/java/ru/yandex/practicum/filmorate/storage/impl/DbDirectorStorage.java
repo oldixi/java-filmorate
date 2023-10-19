@@ -80,13 +80,9 @@ public class DbDirectorStorage implements DirectorStorage {
 
     @Override
     public boolean existsById(long id) {
-        try {
             Integer count = jdbcTemplate.queryForObject(
-                    "select count(id) from directors where id=?", Integer.class, id);
+                    "select count(1) from directors where id=?", Integer.class, id);
             return count == 1;
-        } catch (EmptyResultDataAccessException e) {
-            return false;
-        }
     }
 
     private Director mapper(ResultSet resultSet) throws SQLException {

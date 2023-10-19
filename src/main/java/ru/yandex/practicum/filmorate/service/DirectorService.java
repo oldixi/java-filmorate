@@ -7,7 +7,6 @@ import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -18,9 +17,9 @@ public class DirectorService {
         if (isIncorrectId(id)) {
             throw new WrongIdException("Param must be more then 0");
         }
-        Optional<Director> directorOpt = directorStorage.getDirectorById(id);
 
-        return directorOpt.orElseThrow(() -> new WrongIdException("No director with id = " + id + " in DB was found."));
+        return directorStorage.getDirectorById(id).orElseThrow(
+                () -> new WrongIdException("No director with id = " + id + " in DB was found."));
     }
 
     public List<Director> getDirectors() {

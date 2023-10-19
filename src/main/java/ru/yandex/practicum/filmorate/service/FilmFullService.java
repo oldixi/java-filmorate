@@ -34,27 +34,27 @@ public class FilmFullService {
     }
 
     public List<Film> getAllFilms() {
-        return addAttributesToFilmInList(filmStorage.getAllFilms());
+        return addAttributesToFilms(filmStorage.getAllFilms());
     }
 
     public List<Film> getTopFilms(int count, Integer genreId, String year) {
-        return addAttributesToFilmInList(filmStorage.getPopular(count, genreId, year));
+        return addAttributesToFilms(filmStorage.getPopular(count, genreId, year));
     }
 
     public List<Film> getTopByDirector(int id, String sortBy) {
-        return addAttributesToFilmInList(filmStorage.getTopByDirector(id, sortBy));
+        return addAttributesToFilms(filmStorage.getTopByDirector(id, sortBy));
     }
 
     public List<Film> getCommonFilms(long userId, long friendId) {
-        return addAttributesToFilmInList(filmStorage.getCommonFilms(userId, friendId));
+        return addAttributesToFilms(filmStorage.getCommonFilms(userId, friendId));
     }
 
     public List<Film> searchFilms(String query, String by) {
-        return addAttributesToFilmInList(filmStorage.searchFilms(query, by));
+        return addAttributesToFilms(filmStorage.searchFilms(query, by));
     }
 
     public List<Film> getRecommendations(long userId) {
-        return addAttributesToFilmInList(filmStorage.getRecommendations(userId));
+        return addAttributesToFilms(filmStorage.getRecommendations(userId));
     }
 
     public Film update(Film film) {
@@ -74,7 +74,7 @@ public class FilmFullService {
         return film;
     }
 
-    private List<Film> addAttributesToFilmInList(List<Film> filmList) {
+    private List<Film> addAttributesToFilms(List<Film> filmList) {
         List<Film> fullFilmList = new ArrayList<>();
         if (filmList.isEmpty()) {
             return fullFilmList;
