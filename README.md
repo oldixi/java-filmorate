@@ -128,9 +128,7 @@
 ![Схема базы данных для проекта](schema-filmorate.png)
 
 ## Схема базы данных (расширенная версия):
-![Схема базы данных для проекта]([https://github.com/oldixi/java-filmorate/blob/group-project/src/main/resources/Filmorate%20ER%20diagram.jpg](https://github.com/oldixi/java-filmorate/blob/group-project/src/main/resources/Filmorate%20ER%20diagram.jpg?raw=true)) 
-
-
+![Схема базы данных для проекта](filmorate_group.jpg) 
  
 #### Примеры запросов к БД:
 
