@@ -28,7 +28,7 @@
 | GET    | Get users, films, directors, reviews, genres, mpa |
 | POST   | Post users, films, directors, reviews             |
 | PUT    | Update , films, directors, reviews, likes         |
-| DELETE | users, films, directors, reviews, likes           |
+| DELETE | Delete users, films, directors, reviews, likes    |
 
 ## Возможные коды HTTP-ответов
 
@@ -114,9 +114,10 @@
 
 ## _Технологии проекта_
 
-> Spring boot 2.14.0<br>
+> Spring Boot 2.14.0<br>
 > JDBC Template
 > Java version 11
+> Spring Boot Test
 
 ## _База данных_
 
@@ -160,3 +161,5 @@ from films f left join (select ll.film_id, count(ll.user_id) cnt from likes_link
 order by l.cnt desc 
 limit 10
 ```
+## _Тестирование проекта_
+Основные операции приложения проверяются с помощью postman-коллекции тестов. Для операций с пользователями и фильмамы используются автотесты.
