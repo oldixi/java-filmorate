@@ -115,9 +115,9 @@
 ## _Технологии проекта_
 
 > Spring Boot 2.14.0<br>
-> JDBC Template
-> Java version 11
-> Spring Boot Test
+> JDBC Template<br>
+> Java version 11<br>
+> SpringBootTest
 
 ## _База данных_
 
